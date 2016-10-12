@@ -110,7 +110,7 @@ public IBinder onBind(Intent intent) {
     return mBinder;
 }
 ```
-###**5.绑定服务并测试夸进程通信
+###**5.绑定服务并测试夸进程通信**
 在你需要调用的Activity中添加如下代码：
 ```
 /**
