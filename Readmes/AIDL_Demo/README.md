@@ -103,6 +103,75 @@ private static final IDataManager.Stub mBinder = new IDataManager.Stub() {
 	}
 };
 ```
+在```onBind```方法中返回这个Binder，这样当我们调用Activity的```bindService```方法的时候就能返回这个binder对象了。
+```
+@Override
+public IBinder onBind(Intent intent) {
+    return mBinder;
+}
+```
+###**5.绑定服务并测试夸进程通信
+在你需要调用的Activity中添加如下代码：
+```
+/**
+ * data manager service 的远程引用
+ */
+private IDataManager dataManagerService = null;
+
+/**
+ * 创建Service Connection用于监听service链接与断开链接
+ */
+private ServiceConnection dataServiceConnection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        dataManagerService = IDataManager.Stub.asInterface(service);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        dataManagerService = null;
+    }
+};
+```
+当你的Activity启动时绑定远程服务
+```
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+	...
+
+    bindService(new Intent(this, DataManagerService.class), dataServiceConnection,
+            Context.BIND_AUTO_CREATE);
+}
+```
+接下来我们编写测试代码，在button的回调函数中我们编写如下测试代码：
+```
+public void callService(View view) {
+    try {
+        System.out.println(dataManagerService.getDataTypeCount());
+        
+        StringBuilder sb = new StringBuilder();
+        for (Data data : dataManagerService.getData()) {
+            System.out.println(data.toString());
+            sb.append(data.toString()).append("\n");
+        }
+        textData.setText(sb.toString());
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println(dataManagerService.getUrlContent("http://www.baidu.com"));
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    } catch (RemoteException e) {
+        e.printStackTrace();
+    }
+}
+```
+###**6.运行查看结果**
 
 ## **·**自己实现Binder
 
