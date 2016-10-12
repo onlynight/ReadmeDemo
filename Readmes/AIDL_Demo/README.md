@@ -6,9 +6,6 @@ AIDL的使用
 注：由于基于eclipse的adt过于老旧这里不再讲解操作，请使用android studio完成以下操作。
 + 使用AIDL文件
 	1. 在你想要创建aidl的包下新建aidl文件（这里我们命名为IDataManager），aidl文件的语法与java类似，默认生成的aidl会有一个demo方法
-    ```
-    void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
-    ```
     ```basicTypes```这个是系统生成的方法，告诉我们能够传递那些类型的数据。
     2. 这里就可以开始添加我们自己的方法啦
 
