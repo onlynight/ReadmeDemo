@@ -10,7 +10,11 @@ AIDL的使用
 ###**1.新建aidl文件**
 在你想要创建aidl的包下新建aidl文件（这里我们命名为IDataManager），aidl文件的语法与java类似，默认生成的aidl会有一个demo方法
 
-
+```
+void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
+```
+<br>
+```basicTypes```这个是系统生成的方法，告诉我们能够传递那些类型的数据。
 ###**2.添加自定义方法**
 
 ```
