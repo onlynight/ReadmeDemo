@@ -14,7 +14,7 @@ AIDL的使用
 void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
 ```
 <br>
-```basicTypes```这个是系统生成的方法，告诉我们能够传递那些类型的数据。
+系统生成的```basicTypes```这个demo方法告诉我们能够传递那些类型的数据。
 ###**2.添加自定义方法**
 
 ```
