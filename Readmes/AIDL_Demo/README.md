@@ -1,8 +1,8 @@
 AIDL使用以及原理分析
-==============
+==================
 
 AIDL的使用
------------
+---------
 注：由于基于eclipse的adt过于老旧这里不再讲解操作，请使用android studio完成以下操作。
 
 ## **·** 使用AIDL文件
@@ -10,13 +10,13 @@ AIDL的使用
 ###**1.新建aidl文件**
 在你想要创建aidl的包下新建aidl文件（这里我们命名为IDataManager），aidl文件的语法与java类似，默认生成的aidl会有一个demo方法
 
-```
+```java
 void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
 ```
 系统生成的```basicTypes```这个demo方法告诉我们能够传递那些类型的数据。
 ###**2.添加自定义方法**
 
-```
+```java
 import org.github.lion.aidl_demo.Data;
 // Declare any non-default types here with import statements
 
@@ -35,13 +35,16 @@ interface IDataManager {
 }
 ```
 ```List<Data> getData()```这个方法中使用了自定义的数据类型，虽然我们在文件开头写了import但是还是无法通过编译，我们需要在sdk的platform下修改framework.aidl，完整路径如下:```~/platforms/android-xx/framework.aidl```，加入我们自己添加的类名即可：
-```
+
+```aidl
 // user define aidl parcelable data
 parcelable org.github.lion.aidl_demo.Data;
 ```
+
 **```Data```需实现```Parcelable```接口。**
 以下是android studio的默认实现。
-```
+
+```java
 /**
  * Created by lion on 2016/10/11.
  * 要通过Bundle传递的数据需要实现Parcelable接口，
@@ -77,7 +80,7 @@ public class Data implements Parcelable {
 ###**4. 添加Service类（远端服务）**
 添加一个```Service```命名为```DataManagerService```我们在```DataManagerService```中实现一个静态的```IDataManager.Stub```的类
 
-```
+```java
 private static final IDataManager.Stub mBinder = new IDataManager.Stub() {
 
 	@Override
@@ -104,15 +107,18 @@ private static final IDataManager.Stub mBinder = new IDataManager.Stub() {
 };
 ```
 在```onBind```方法中返回这个Binder，这样当我们调用Activity的```bindService```方法的时候就能返回这个binder对象了。
-```
+
+```java
 @Override
 public IBinder onBind(Intent intent) {
     return mBinder;
 }
 ```
+
 ###**5.绑定服务并测试夸进程通信**
 在你需要调用的Activity中添加如下代码：
-```
+
+```java
 /**
  * data manager service 的远程引用
  */
@@ -134,7 +140,8 @@ private ServiceConnection dataServiceConnection = new ServiceConnection() {
 };
 ```
 当你的Activity启动时绑定远程服务
-```
+
+```java
 @Override
 protected void onCreate(Bundle savedInstanceState) {
 	...
@@ -144,7 +151,8 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 接下来我们编写测试代码，在button的回调函数中我们编写如下测试代码：
-```
+
+```java
 public void callService(View view) {
     try {
         System.out.println(dataManagerService.getDataTypeCount());
