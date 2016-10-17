@@ -1014,305 +1014,144 @@ body .markdown-body
     page-break-after: avoid;
   }
 }
-</style><title>README</title></head><body><article class="markdown-body"><h1 id="aidlipc"><a name="user-content-aidlipc" href="#aidlipc" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>AIDL使用以及IPC原理分析（进程间通信）</h1>
-<h1 id="_1"><strong>概要</strong></h1>
-<p>为了大家能够更好的理解android的进程间通信原理，以下将会从以下几个方面讲解跨进程通讯信：<br />
-1. 必要了解的概念<br />
-2. 为什么要使用aidl进程间通信<br />
-3. 可能遇到的问题以及解决办法<br />
-4. aidl的使用，通过android提供的aidl实现一个进程间通信<br />
-5. 不使用aidl，手动编写Binder实现进程间通信<br />
-6. 分析aidl的原理，梳理andriod进程间通信相关知识</p>
-<h1 id="1"><a name="user-content-1" href="#1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1.必要了解的概念</h1>
-<h5 id="aipc"><a name="user-content-aipc" href="#aipc" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>a.IPC</h5>
-<p>IPC是Inner-Process Communication，就是进程间通信。</p>
-<h5 id="baidl"><a name="user-content-baidl" href="#baidl" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>b.AIDL</h5>
-<p>AUDL是Android Interface Define Language 安卓接口语言缩写。</p>
-<h5 id="cbinder"><a name="user-content-cbinder" href="#cbinder" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>c.Binder</h5>
-<p>Binder是android中负责进程间通信的驱动类，Binder内部设计十分复杂这里我们暂不做深入研究，这里我们只需要了解它是负责进程间通信的类即可。</p>
-<h5 id="dproxy"><a name="user-content-dproxy" href="#dproxy" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>d.Proxy代理模式</h5>
-<p>如果你不是很了解代理模式，可以去这里看看。<br />
-<a href="https://github.com/onlynight/Proxy">Proxy Pattern <a href="https://github.com/onlynight/Proxy"><a href="https://github.com/onlynight/Proxy">https://github.com/onlynight/Proxy</a></a></a></p>
-<h1 id="2why"><a name="user-content-2why" href="#2why" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2.WHY？</h1>
-<ol>
-<li>某些情况下远端的服务更适合运算或者更适合执行耗时操作，这时候我们会使用aidl请求远程服务；</li>
-<li>android对单个应用的内存限制，当有需求需要突破这个限制的时候我们需要另启进程扩大内存。<br />
-实际使用情况还有很多，笔者遇到的情况还不是很多这里就不意义列举了，反正aidl是一种很有效的IPC通信方式。</li>
-</ol>
-<h1 id="3"><a name="user-content-3" href="#3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>3.可能遇到的问题</h1>
-<p>我们都知道在android中一个应用就对应一个linux进程，或者说默认情况下所有的组件都是在同一个进程下的；我们也可以将不同的组件放在不同的进程中，详情请查看我的另外一篇文章<a href="https://github.com/onlynight/MultiProcessComponent">Multi Process Component <a href="https://github.com/onlynight/MultiProcessComponent"><a href="https://github.com/onlynight/MultiProcessComponent">https://github.com/onlynight/MultiProcessComponent</a></a></a>，这样应用就不止一个进程了，按照一个进程对应一个虚拟机，也就是说我们应用不止一个虚拟机了。可能出现的问题我们来举个栗子：</p>
-<p>假设你的代码里有一个单例，DemoSingletion；虚拟机1启动时创建了这个单例，你在虚拟机中任何一个线程中使用都只有它一个对象，线程同步问题可以添加线程锁解决。那么问题来了，虚拟机2启动的时候还会再创建这个单例吗？如果不创建的话和虚拟机1使用的是同一个单例吗？</p>
-<p>实际情况是每个虚拟机启动的时候都会创建各自的单例，他们是不同的对象，在不同的地址空间上。那么问题又来了，两个虚拟机操作的是不同的对象那么这个DemoSingletion怎么同步呢？无论是添加线程锁还是对象锁我们都无法做到同步，究其原因就是操作的是不同的对象。这就是多进程带来的问题之一，接下来我们列举会出现的问题并说明如何解决这些问题。</p>
-<ol>
-<li>单例模式完全失效</li>
-<li>静态变量无法同步</li>
-</ol>
-<h1 id="4aidl"><a name="user-content-4aidl" href="#4aidl" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>4.AIDL的使用</h1>
-<p>注：由于基于eclipse的adt过于老旧这里不再讲解操作，请使用android studio完成以下操作。</p>
-<h2 id="aidl"><strong>·</strong> 使用AIDL文件</h2>
-<h3 id="aaidl"><a name="user-content-aaidl" href="#aaidl" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>a.新建aidl文件</h3>
-<p>在你想要创建aidl的包下新建aidl文件（这里我们命名为IDataManager），aidl文件的语法与java类似，默认生成的aidl会有一个demo方法</p>
-<p><pre><code class="java">void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
-</code></pre><br />
-系统生成的<code>basicTypes</code>这个demo方法告诉我们能够传递那些类型的数据。</p>
-<h3 id="b"><a name="user-content-b" href="#b" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>b.添加自定义方法</h3>
-<p><pre><code class="java">import org.github.lion.aidl_demo.Data;
-// Declare any non-default types here with import statements
+</style><title>README</title></head><body><article class="markdown-body"><h1 id="proxy-pattern"><a name="user-content-proxy-pattern" href="#proxy-pattern" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Proxy Pattern</h1>
+<h2 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>概述</h2>
+<p>Proxy代理模式，是GOF中一种常用的设计模式。</p>
+<blockquote>
+<p>代理模式就是给一个对象提供一个代理，并由代理对象控制对原对象的引用。它使得客户不能直接与真正的目标对象通信。代理对象是目标对象的代表，其他需要与这个目标对象打交道的操作都是和这个代理对象在交涉。</p>
+<p>代理对象可以在客户端和目标对象之间起到中介的作用，这样起到了的作用和保护了目标对象的，同时也在一定程度上面减少了系统的耦合度。</p>
+</blockquote>
+<p><img alt="uml类图" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/Proxy_Pattern/images/uml.png" /></p>
+<p><strong>参与者:</strong><br />
+<code>Subject</code>: 抽象角色。声明真实对象和代理对象的共同接口。<br />
+<code>Proxy</code>: 代理角色。代理对象与真实对象实现相同的接口，所以它能够在任何时刻都能够代理真实对象。代理角色内部包含有对真实对象的引用，所以她可以操作真实对象，同时也可以附加其他的操作，相当于对真实对象进行封装。<br />
+<code>RealSubject</code>: 真实角色。它代表着真实对象，是我们最终要引用的对象。</p>
+<h2 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>代码示例</h2>
+<p><a href="https://github.com/onlynight/Proxy">Github 源码: <a href="https://github.com/onlynight/Proxy"><a href="https://github.com/onlynight/Proxy">https://github.com/onlynight/Proxy</a></a></a></p>
+<h3 id="1"><a name="user-content-1" href="#1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1.首先定义一个抽象能力接口</h3>
+<p>定义被代理对象能够想外部提供的能力。</p>
+<pre><code class="java">public interface Subject {
 
-interface IDataManager {
     /**
-     * Demonstrates some basic types that you can use as parameters
-     * and return values in AIDL.
+     * 封装代理操作
      */
-    void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
-
-    int getDataTypeCount();
-
-    List&lt;Data&gt; getData();
-
-    String getUrlContent(String url);
+    void operation();
 }
-</code></pre><br />
-<code>List&lt;Data&gt; getData()</code>这个方法中使用了自定义的数据类型，虽然我们在文件开头写了import但是还是无法通过编译，我们需要在sdk的platform下修改framework.aidl，完整路径如下:<code>~/platforms/android-xx/framework.aidl</code>，加入我们自己添加的类名即可：</p>
-<pre><code class="aidl">// user define aidl parcelable data
-parcelable org.github.lion.aidl_demo.Data;
 </code></pre>
 
-<p><strong><code>Data</code>需实现<code>Parcelable</code>接口。</strong><br />
-以下是android studio的默认实现。</p>
+<h3 id="2"><a name="user-content-2" href="#2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2.被代理对象实现接口</h3>
+<p>被代理对象实现抽象能力接口，并实现其内部功能。接口函数内部实现就代表了被代理对象对外的提供的能力。</p>
+<pre><code class="java">public class RealSubject implements Subject {
+    @Override
+    public void operation() {
+        // 调用内部函数，实现改函数的真正功能
+        operation1();
+        System.out.println(&quot;real operation&quot;);
+    }
+
+    private void operation1() {
+        //todo real operation1
+    }
+}
+</code></pre>
+
+<h3 id="3"><a name="user-content-3" href="#3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>3.代理实现接口</h3>
 <pre><code class="java">/**
  * Created by lion on 2016/10/11.
- * 要通过Bundle传递的数据需要实现Parcelable接口，
- * 一旦你实现了这个接口android studio会提示你帮
- * 你快速实现带有Parcel的构造函数。
+ * 这类的构造函数需要从外部传入被代理对象，这种不太符合真实的使用场景
  */
-public class Data implements Parcelable {
+public class Proxy implements Subject {
 
-    ...
+    private Subject subject;
 
-    protected Data(Parcel in) {
-        ...
-    }
-
-    public static final Creator&lt;Data&gt; CREATOR = new Creator&lt;Data&gt;() {
-        @Override
-        public Data createFromParcel(Parcel in) {
-            return new Data(in);
-        }
-
-        @Override
-        public Data[] newArray(int size) {
-            return new Data[size];
-        }
-    };
-}
-</code></pre>
-
-<h3 id="c-aidl"><a name="user-content-c-aidl" href="#c-aidl" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>c. 编译aidl文件</h3>
-<p>到这里aidl的编写就完成了，我们build下工程，编译器会自动生成IDataManager.java文件。<br />
-该文件在工程的<code>~/app/build/generated/source/aidl/debug/&lt;package&gt;/IDataManager.java</code>，这里我们先不讲解生成的这个类，先看下如何使用aidl。</p>
-<h3 id="d-service"><a name="user-content-d-service" href="#d-service" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>d. 添加Service类（远端服务）</h3>
-<p>添加一个<code>Service</code>命名为<code>DataManagerService</code>我们在<code>DataManagerService</code>中实现一个静态的<code>IDataManager.Stub</code>的类</p>
-<p><pre><code class="java">private static final IDataManager.Stub mBinder = new IDataManager.Stub() {
-
-    @Override
-    public void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat, double aDouble, String aString) throws RemoteException {
+    public Proxy(Subject subject) {
+        this.subject = subject;
     }
 
     @Override
-    public int getDataTypeCount() throws RemoteException {
-        // todo return some data
-        return 0;
-    }
-
-    @Override
-    public List&lt;Data&gt; getData() throws RemoteException {
-        // todo return some data
-        return null;
-    }
-
-    @Override
-    public String getUrlContent(String url) throws RemoteException {
-        // todo return some data
-        return null;
-    }
-};
-</code></pre><br />
-在<code>onBind</code>方法中返回这个Binder，这样当我们调用Activity的<code>bindService</code>方法的时候就能返回这个binder对象了。</p>
-<pre><code class="java">@Override
-public IBinder onBind(Intent intent) {
-    return mBinder;
-}
-</code></pre>
-
-<h3 id="e"><a name="user-content-e" href="#e" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>e.绑定服务并测试夸进程通信</h3>
-<p>在你需要调用的Activity中添加如下代码：</p>
-<p><pre><code class="java">/**
- * data manager service 的远程引用
- */
-private IDataManager dataManagerService = null;
-
-/**
- * 创建Service Connection用于监听service链接与断开链接
- */
-private ServiceConnection dataServiceConnection = new ServiceConnection() {
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        dataManagerService = IDataManager.Stub.asInterface(service);
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        dataManagerService = null;
-    }
-};
-</code></pre><br />
-当你的Activity启动时绑定远程服务</p>
-<p><pre><code class="java">@Override
-protected void onCreate(Bundle savedInstanceState) {
-    ...
-
-    bindService(new Intent(this, DataManagerService.class), dataServiceConnection,
-            Context.BIND_AUTO_CREATE);
-}
-</code></pre><br />
-接下来我们编写测试代码，在button的回调函数中我们编写如下测试代码：</p>
-<pre><code class="java">public void callService(View view) {
-    try {
-        System.out.println(dataManagerService.getDataTypeCount());
-
-        StringBuilder sb = new StringBuilder();
-        for (Data data : dataManagerService.getData()) {
-            System.out.println(data.toString());
-            sb.append(data.toString()).append(&quot;\n&quot;);
-        }
-        textData.setText(sb.toString());
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    System.out.println(dataManagerService.getUrlContent(&quot;http://www.baidu.com&quot;));
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    } catch (RemoteException e) {
-        e.printStackTrace();
+    public void operation() {
+        System.out.println(&quot;before operation&quot;);
+        subject.operation();
+        System.out.println(&quot;end operation&quot;);
     }
 }
 </code></pre>
 
-<h3 id="f"><a name="user-content-f" href="#f" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>f.运行查看结果</h3>
-<h2 id="binder"><strong>·</strong>自己实现Binder</h2>
-<p>上面我们展示了如何使用AIDL文件实现进程间通信，为了能够更好的理解进程间通信机制接下来将会展示如何手动编写一个Binder实现IPC。</p>
-<h3 id="aidl_1"><a name="user-content-aidl_1" href="#aidl_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>aidl生成类分析</h3>
-<p>将Android Studio切换到项目视图，找到如下文件：<br />
-<img alt="Android Studio aidl 自动生成类" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/AIDL_Demo/images/aidl_interface_screenshot.png" /><br />
-我们将这个接口文件简化以下，看看系统多给我们做了些什么。</p>
-<pre><code class="java">public interface IDataManager extends android.os.IInterface {
+<p>一般采用代理就是不想让真正的对象直接和外部接触，通过代理代码解耦和。</p>
+<pre><code class="java">/**
+ * Created by lion on 2016/10/14.
+ * 通过静态方法获取代理，这里可以设计成单例，也可以从远程服务中获取被代理对象。
+ */
+public class Proxy implements Subject {
+
+    private Proxy() {
+    }
+
+    public static Proxy getDefault() {
+        // 这里又很多想象空间，具体怎么使用就留给大家啦。
+        return new Proxy();
+    }
 
     /**
-     * Local-side IPC implementation stub class.
+     * 这里演示内部构造方式，控制外部访问权限。
+     * 只要不把对象本身能直接外部访问即可。
      */
-    public static abstract class Stub extends android.os.Binder implements org.github.lion.aidl_demo.IDataManager {
+    private Subject subject = new RealSubject();
 
-        private static class Proxy implements org.github.lion.aidl_demo.IDataManager {}
+    @Override
+    public void operation() {
+        System.out.println(&quot;Proxy start&quot;);
+        subject.operation();
+        System.out.println(&quot;Proxy end&quot;);
     }
 }
 </code></pre>
 
-<h4 id="idatamanager"><code>IDataManager</code></h4>
-<p>这个是我们定义的aidl接口，这个接口里面就要定义我们需要的要成服务能力的接口;</p>
-<h4 id="idatamanagerstub"><code>IDataManager.Stub</code></h4>
-<p>这个是一个继承自Binder并且实现了IDataManager的抽象类；</p>
-<h4 id="idatamanagerstubproxy"><code>IDataManager.Stub.Proxy</code></h4>
-<p>这个是一个私有内部类，实现了IDataManager;</p>
-<p>我们知道Binder是Android中的IPC通信驱动，从类结构我们就可以看出最终的实际功能类是<code>IDataManager.Stub.Proxy</code>。具体的类方法我们暂时不做分析，接下来我们不使用aidl文件自己实现一个Binder驱动类，写的过程中我们细细来分析各个函数的功能。</p>
-<h3 id="binderipc"><a name="user-content-binderipc" href="#binderipc" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>自己实现Binder驱动IPC通信</h3>
-<h4 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>定义公共接口</h4>
-<p>从上面aidl生成的类我们看出需要实现IPC通信需要实现IInterface接口，并且继承Binder类从中间驱动。所以首先我们先定义公共接口继承IInterface接口。</p>
-<pre><code class="java">//IDataManager.java
-public interface IDataManager2 extends IInterface {
+<p>测试代码如下</p>
+<pre><code class="java">public class Main {
 
-    // 返回值为基本数据类型，定义接口时不需要做特殊处理
-    int getDataCount() throws RemoteException;
-
-    // 自定义的返回数据类型需要实现Parcelable接口，进程间通信不能直接共享内存，需要将对象持久化。
-    // 所以自定义的类需要实现Parcelable接口
-    List&lt;Data2&gt; getData() throws RemoteException;
-}
-
-
-/**
- * Data2.java
- * Created by lion on 2016/10/11.
- * 要通过Bundle传递的数据需要实现Parcelable接口，
- * 一旦你实现了这个接口android studio会提示你帮
- * 你快速实现带有Parcel的构造函数。
- */
-public class Data2 implements Parcelable {
-
-    private int id;
-    private String content;
-
-    public Data2() {
+    public static void main(String[] args) {
+        System.out.println(&quot;demo1&gt;&quot;);
+        demo1();
+        System.out.println(&quot;\ndemo2&gt;&quot;);
+        demo2();
     }
 
-    protected Data2(Parcel in) {
-        id = in.readInt();
-        content = in.readString();
+    private static void demo1() {
+        Subject subject = new RealSubject();
+        Proxy proxy = new Proxy(subject);
+        proxy.operation();
     }
 
-    public static final Creator&lt;Data2&gt; CREATOR = new Creator&lt;Data2&gt;() {
-        @Override
-        public Data2 createFromParcel(Parcel in) {
-            return new Data2(in);
-        }
-
-        @Override
-        public Data2[] newArray(int size) {
-            return new Data2[size];
-        }
-    };
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(content);
-    }
-
-    @Override
-    public String toString() {
-        return &quot;id = &quot; + id + &quot; content = &quot; + content;
+    private static void demo2() {
+        com.github.onlynight.proxy.privacy.Proxy.getDefault().operation();
     }
 }
 </code></pre>
 
-<p>为了让代码逻辑更加清晰，这回我们的Binder类不再写成内部类。</p>
-<pre><code class="java">
+<p>输出结果</p>
+<pre><code class="text">demo1&gt;
+before operation
+real operation
+end operation
+
+demo2&gt;
+Proxy start
+real operation
+Proxy end
 </code></pre>
 
-<h2 id="aidl_2"><a name="user-content-aidl_2" href="#aidl_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>AIDL原理分析</h2></article></body></html>
+<h2 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>使用场景</h2>
+<p>在需要用比较通用和复杂的对象指针代替简单的指针的时候，使用 Proxy模式。下面是一些可以使用Proxy模式常见情况：</p>
+<h3 id="1remote-proxy"><a name="user-content-1remote-proxy" href="#1remote-proxy" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1.远程代理（Remote  Proxy）</h3>
+<p>远程代理为一个位于不同的地址空间的对象提供一个本地的代理对象。这个不同的地址空间可以是在同一台主机中，也可是在另一台主机中，远程代理又叫做大使(Ambassador)。<br />
+这中代理模式比较常用，后续的Android的Binder通信中使用了远程代理模式，在其中有很好的应用，感兴趣的朋友可以查看我后续的代码分析。<a href="https://github.com/onlynight/AIDL_demo">Github AIDL</a></p>
+<h3 id="2virtual-proxy"><a name="user-content-2virtual-proxy" href="#2virtual-proxy" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2.虚拟代理（Virtual Proxy）</h3>
+<p>虚拟代理根据需要创建开销很大的对象。如果需要创建一个资源消耗较大的对象，先创建一个消耗相对较小的对象来表示，真实对象只在需要时才会被真正创建。 </p>
+<h3 id="3protection-proxy"><a name="user-content-3protection-proxy" href="#3protection-proxy" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>3.保护代理（Protection Proxy）</h3>
+<p>保护代理控制对原始对象的访问。保护代理用于对象应该有不同的访问权限的时候。</p>
+<h3 id="4smart-reference"><a name="user-content-4smart-reference" href="#4smart-reference" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>4.智能指引（Smart Reference）</h3>
+<p>智能指引取代了简单的指针，它在访问对象时执行一些附加操作。</p>
+<h3 id="5copy-on-write"><a name="user-content-5copy-on-write" href="#5copy-on-write" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>5.Copy-on-Write代理</h3>
+<p>Copy-on-Write代理它是虚拟代理的一种，把复制（克隆）操作延迟到只有在客户端真正需要时才执行。一般来说，对象的深克隆是一个开销较大的操作，Copy-on-Write代理可以让这个操作延迟，只有对象被用到的时候才被克隆。</p>
+<p>由于笔者阅历有限暂时不能提供相应的栗子，后续的开发中如果遇到合适的栗子会持续更新，谢谢大家的支持。</p></article></body></html>
