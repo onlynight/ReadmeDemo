@@ -258,7 +258,7 @@ public interface IDataManager extends android.os.IInterface {
 
 我们知道Binder是Android中的IPC通信驱动，从类结构我们就可以看出最终的实际功能类是```IDataManager.Stub.Proxy```。具体的类方法我们暂时不做分析，接下来我们不使用aidl文件自己实现一个Binder驱动类，写的过程中我们细细来分析各个函数的功能。
 
-###自己实现Binder驱动IPC通信
+##5.自己实现Binder驱动IPC通信
 
 ####定义公共接口
 从上面aidl生成的类我们看出需要实现IPC通信需要实现IInterface接口，并且继承Binder类从中间驱动。所以首先我们先定义公共接口继承IInterface接口。
