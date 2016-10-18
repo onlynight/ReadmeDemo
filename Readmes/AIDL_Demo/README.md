@@ -53,6 +53,7 @@ void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDo
 ###b.添加自定义方法
 
 ```java
+// 无论应用的类是否和aidl文件在同一包下，都需要显示import
 import org.github.lion.aidl_demo.Data;
 // Declare any non-default types here with import statements
 
@@ -72,9 +73,17 @@ interface IDataManager {
 ```
 ```List<Data> getData()```这个方法中使用了自定义的数据类型，虽然我们在文件开头写了import但是还是无法通过编译，我们需要在sdk的platform下修改framework.aidl，完整路径如下:```~/platforms/android-xx/framework.aidl```，加入我们自己添加的类名即可：
 
-```aidl
+```java
 // user define aidl parcelable data
 parcelable org.github.lion.aidl_demo.Data;
+```
+
+这个路径实际上是系统定义的Parcelable类```~/platforms/android-xx/framework.aidl```，这里我们不建议修改这个文件，另一种方式是aidl文件，定义如下：
+
+```java
+// Data.aidl Data 类的完整包名为 org.github.lion.aidl_demo.Data，我们定义的aidl文件如下即可。
+package org.github.lion.aidl_demo;
+parcelable Data;
 ```
 
 **```Data```需实现```Parcelable```接口。**
@@ -335,11 +344,150 @@ public class Data2 implements Parcelable {
 
 为了让代码逻辑更加清晰，这回我们的Binder类不再写成内部类。
 
+
 ```java
+public abstract class DataManagerNative extends Binder implements IDataManager2 {
+
+    // Binder描述符，唯一标识符
+    private static final String DESCRIPTOR = "com.github.onlynight.aidl_demo2.aidl.IDataManager2";
+
+    // 每个方法对应的ID
+    private static final int TRANSACTION_getDataCount = IBinder.FIRST_CALL_TRANSACTION;
+    private static final int TRANSACTION_getData = IBinder.FIRST_CALL_TRANSACTION + 1;
+
+    public DataManagerNative() {
+        attachInterface(this, DESCRIPTOR);
+    }
+
+    /**
+     * 将Binder转化为IInterface接口
+     *
+     * @param binder
+     * @return
+     */
+    public static IDataManager2 asInterface(IBinder binder) {
+        if (binder == null) {
+            return null;
+        }
+        //同一进程内直接返回
+        IInterface iin = binder.queryLocalInterface(DESCRIPTOR);
+        if ((iin != null) && (iin instanceof IDataManager2)) {
+            return (IDataManager2) iin;
+        }
+
+        //不在同一进程使用代理获取远程服务
+        return new Proxy(binder);
+    }
+
+    @Override
+    public IBinder asBinder() {
+        return this;
+    }
+
+    /**
+     * 我们查看Binder的源码就可以看出实际上transact方法真正的执行体
+     * 是这个onTransact方法。
+     *
+     * @param code  服务器回掉的方法ID，每一个方法都有一个唯一id，
+     *              这样方法回调时可通过id判断回调的方法。
+     * @param data  输入的参数，传递给服务端的参数
+     * @param reply 输出的参数，服务器返回的数据
+     * @param flags 默认传入0
+     * @return
+     * @throws RemoteException 远端服务器无响应抛出该错误。
+     */
+    @Override
+    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+        switch (code) {
+            case TRANSACTION_getDataCount: {
+                data.enforceInterface(DESCRIPTOR);
+                int _result = this.getDataCount();
+                reply.writeNoException();
+                reply.writeInt(_result);
+                return true;
+            }
+            case TRANSACTION_getData: {
+                data.enforceInterface(DESCRIPTOR);
+                List<Data2> _result = this.getData();
+                reply.writeNoException();
+                reply.writeTypedList(_result);
+                return true;
+            }
+        }
+        return super.onTransact(code, data, reply, flags);
+    }
+
+    /**
+     * 代理类，调用transact方法。
+     */
+    private static class Proxy implements IDataManager2 {
+
+        private IBinder remote;
+
+        Proxy(IBinder remote) {
+            this.remote = remote;
+        }
+
+        public String getInterfaceDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        @Override
+        public int getDataCount() throws RemoteException {
+            // 输入参数
+            Parcel _data = Parcel.obtain();
+
+            //输出参数
+            Parcel _reply = Parcel.obtain();
+            int _result;
+            try {
+                _data.writeInterfaceToken(DESCRIPTOR);
+                remote.transact(TRANSACTION_getDataCount, _data, _reply, 0);
+                _reply.readException();
+                _result = _reply.readInt();
+            } finally {
+                _reply.recycle();
+                _data.recycle();
+            }
+            return _result;
+        }
+
+        @Override
+        public List<Data2> getData() throws RemoteException {
+            Parcel _data = Parcel.obtain();
+            Parcel _reply = Parcel.obtain();
+            List<Data2> _result;
+            try {
+                _data.writeInterfaceToken(DESCRIPTOR);
+                remote.transact(TRANSACTION_getData, _data, _reply, 0);
+                _reply.readException();
+                _result = _reply.createTypedArrayList(Data2.CREATOR);
+            } finally {
+                _reply.recycle();
+                _data.recycle();
+            }
+            return _result;
+        }
+
+        @Override
+        public IBinder asBinder() {
+            return remote;
+        }
+    }
+}
 ```
 
-AIDL原理分析
------------
+#6.AIDL原理分析
+
+相信经过以上的分析大家应该有个大概的认识了，但是要动起手来应该会有很多地方卡住，接下来我们来个全面的分析，理清楚Binder的机制。
+
+## **·**运行原理图
+首先我们先来看下原理图，让大家有个感性的认识：
+![Binder原理图](./images/Binder_principle.png)
+
+调用顺序是这样：
+```Client->operate()->transact()->onTransact()->operation()->Server```
+我们能看到的源码执行顺序就是这样的，由于Binder内部结构很复杂，Binder内部的如何进行数据交换如何定位服务端方法我们这里不再介绍，感兴趣的朋友可以查看Android源码。
 
 [Multi Process Component https://github.com/onlynight/MultiProcessComponent]: https://github.com/onlynight/MultiProcessComponent
 [Proxy Pattern https://github.com/onlynight/Proxy]: https://github.com/onlynight/Proxy
