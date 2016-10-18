@@ -485,9 +485,7 @@ public abstract class DataManagerNative extends Binder implements IDataManager2 
 首先我们先来看下原理图，让大家有个感性的认识：
 ![Binder原理图](./images/Binder_principle.png)
 
-调用顺序是这样：
-
-```Client->operate()->transact()->onTransact()->operation()->Server```
+调用顺序是这样：```Client->operate()->transact()->onTransact()->operation()->Server```
 
 我们能看到的源码执行顺序就是这样的，由于Binder内部结构很复杂，Binder内部的如何进行数据交换如何定位服务端方法我们这里不再介绍，感兴趣的朋友可以查看Android源码。
 
