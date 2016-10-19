@@ -342,8 +342,8 @@ public class Data2 implements Parcelable {
 }
 ```
 
+继承Binder并实现IDataManager2接口的类作为Binder的本体。
 为了让代码逻辑更加清晰，这回我们的Binder类不再写成内部类。
-
 
 ```java
 public abstract class DataManagerNative extends Binder implements IDataManager2 {
@@ -477,6 +477,82 @@ public abstract class DataManagerNative extends Binder implements IDataManager2 
 }
 ```
 
+####```DataManagerNative.DESCRIPTER```
+Binder描述符，唯一标识符，服务端和客户端都可以通过该ID定位到Binder实例。
+
+####```DataManagerNative.TRANSACTION_XXX```
+自定义的IInterface方法的唯一标识符。
+
+####```DataManagerNative.asInterface```
+将Binder转换为IInterface就可以直接调用我们自己定义的方法啦。
+
+####```DataManagerNative.onTransact```
+根据不同的```TRANSACTION_ID```调用调用不同的方法。
+
+####```DataManagerNative.Proxy```
+代理远端Binder，对外提供```IDataManager2```的功能。
+
+####```DataManagerNative.Proxy.transact```
+想调用远端Binder的transact方法。
+
+可以看到```DataManagerNative```是个抽象类，并没有实现```IDataManager2```中的方法。所以我们需要在实例化这个类的时候实现这些方法，这些操作都放到Service中去完成。
+
+Service中Binder的实现我们和上一次使用同样的代码。
+
+```java
+public class DataManagerService extends Service {
+
+    private static List<Data2> data = new ArrayList<>();
+
+    static {
+        Data2 data1 = new Data2();
+        data1.setId(1);
+        data1.setContent("data1");
+        data.add(data1);
+        Data2 data2 = new Data2();
+        data2.setId(2);
+        data2.setContent("data2");
+        data.add(data2);
+        Data2 data3 = new Data2();
+        data3.setId(3);
+        data3.setContent("data3");
+        data.add(data3);
+        Data2 data4 = new Data2();
+        data4.setId(4);
+        data4.setContent("data4");
+        data.add(data4);
+        Data2 data5 = new Data2();
+        data5.setId(5);
+        data5.setContent("data5");
+        data.add(data5);
+    }
+
+    // 可以看到我们在这里实现了这个Binder，这里才是这个Binder的本体。
+    private static DataManagerNative binder = new DataManagerNative() {
+
+        @Override
+        public int getDataCount() throws RemoteException {
+            return data.size();
+        }
+
+        @Override
+        public List<Data2> getData() throws RemoteException {
+            return data;
+        }
+    };
+
+    public DataManagerService() {
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+}
+```
+
+实际上我们自己修改过的类和编译器自动生成的类基本上是一样的，这里为了让大家有更加深刻的认识，我们将其手动实现一次。
+
 #6.AIDL原理分析
 
 相信经过以上的分析大家应该有个大概的认识了，但是要动起手来应该会有很多地方卡住，接下来我们来个全面的分析，理清楚Binder的机制。
@@ -488,6 +564,58 @@ public abstract class DataManagerNative extends Binder implements IDataManager2 
 调用顺序是这样：```Client->operate()->transact()->onTransact()->operation()->Server```
 
 我们能看到的源码执行顺序就是这样的，由于Binder内部结构很复杂，Binder内部的如何进行数据交换如何定位服务端方法我们这里不再介绍，感兴趣的朋友可以查看Android源码。
+
+有几个比较有趣的地方我们单独拿出来说说。
+####首先是```transact```方法
+
+```java
+public int getDataCount() throws RemoteException {
+    // 输入参数
+    Parcel _data = Parcel.obtain();
+
+    //输出参数
+    Parcel _reply = Parcel.obtain();
+    int _result;
+    try {
+        _data.writeInterfaceToken(DESCRIPTOR);
+        remote.transact(TRANSACTION_getDataCount, _data, _reply, 0);
+        _reply.readException();
+        _result = _reply.readInt();
+    } finally {
+        _reply.recycle();
+        _data.recycle();
+    }
+    return _result;
+}
+```
+
+其中```_data```是调用函数传入的参数，```_reply```是调用函数返回的结果。通过形参的方式返回在java中不常见，这里需要理解下，```_reply```即是函数执行完将结果赋值到这个引用中。我们只需要按照顺序read其中的结果即可```_reply.readInt()```。
+
+我们在看下```transact```方法的源码
+
+```java
+/**
+ * Default implementation rewinds the parcels and calls onTransact.  On
+ * the remote side, transact calls into the binder to do the IPC.
+ */
+public final boolean transact(int code, Parcel data, Parcel reply,
+        int flags) throws RemoteException {
+    if (false) Log.v("Binder", "Transact: " + code + " to " + this);
+
+    if (data != null) {
+        data.setDataPosition(0);
+    }
+    boolean r = onTransact(code, data, reply, flags);
+    if (reply != null) {
+        reply.setDataPosition(0);
+    }
+    return r;
+}
+```
+
+很明显```onTransact```才是真正的方法执行体，而```onTransact```方法调用了实现```IDataManager2```接口的类的实现方法；注意上面大的例子看起来稍微有些复杂，```DataManagerNative```是个抽象类它并没有实现```IDataManager2```中的方法，真正实现这些方法的```DataManagerNative```的实例在```DataManagerService```中，再结合上面的原理图，相信你现在已经很了解AIDL的通信机制了吧。
+
+以上都是个人理解进行的分析，如果哪里有问题欢迎指出，最后希望这篇文章能够帮到你。
 
 [Multi Process Component https://github.com/onlynight/MultiProcessComponent]: https://github.com/onlynight/MultiProcessComponent
 [Proxy Pattern https://github.com/onlynight/Proxy]: https://github.com/onlynight/Proxy
