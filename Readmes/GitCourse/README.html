@@ -1030,7 +1030,7 @@ Git 与 SVN 区别点：</p>
 <li>GIT没有一个全局的版本号，而SVN有：目前为止这是跟SVN相比GIT缺少的最大的一个特征。</li>
 <li>GIT的内容完整性要优于SVN：GIT的内容存储使用的是SHA-1哈希算法。这能确保代码内容的完整性，确保在遇到磁盘故障和网络问题时降低对版本库的破坏。</li>
 </ol>
-<h2 id="git_2"><a name="user-content-git_2" href="#git_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git配置</h2>
+<h2 id="git-git-config"><a name="user-content-git-git-config" href="#git-git-config" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git配置 git config</h2>
 <p>Git 提供了一个叫做 git config 的工具，专门用来配置或读取相应的工作环境变量。<br />
 这些环境变量，决定了 Git 在各个环节的具体工作方式和行为。这些变量可以存放在以下三个不同的地方：</p>
 <blockquote>
@@ -1040,7 +1040,7 @@ Git 与 SVN 区别点：</p>
 <p>在 Windows 系统上，Git 会找寻用户主目录下的 .gitconfig 文件。主目录即 $HOME 变量指定的目录，一般都是 C:\Documents and Settings\$USER。</p>
 <p>此外，Git 还会尝试找寻 /etc/gitconfig 文件，只不过看当初 Git 装在什么目录，就以此作为根目录来定位。</p>
 </blockquote>
-<h3 id="1"><a name="user-content-1" href="#1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1.用户信息</h3>
+<h3 id="1-git-config-user"><a name="user-content-1-git-config-user" href="#1-git-config-user" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1.用户信息 git config user</h3>
 <p>配置个人的用户名称和电子邮件地址：</p>
 <pre><code class="bash">$ git config --global user.name &quot;wyndam&quot;
 $ git config --global user.email &quot;only.night@qq.com&quot;
@@ -1060,7 +1060,7 @@ $ git config --global user.email &quot;only.night@qq.com&quot;
 
 <p>Git 可以理解 kdiff3，tkdiff，meld，xxdiff，emerge，vimdiff，gvimdiff，ecmerge，和 opendiff 等合并工具的输出信息。<br />
 当然，你也可以指定使用自己开发的工具，具体怎么做可以参阅后面的章节。</p>
-<h3 id="4"><a name="user-content-4" href="#4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>4.查看配置信息</h3>
+<h3 id="4-git-config-list"><a name="user-content-4-git-config-list" href="#4-git-config-list" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>4.查看配置信息 git config &ndash;list</h3>
 <p>要检查已有的配置信息，可以使用 git config &ndash;list 命令：</p>
 <pre><code class="bash">$ git config --list
 
@@ -1103,7 +1103,7 @@ core.editor=subl
 only.night@qq.com
 </code></pre>
 
-<h1 id="git_3"><a name="user-content-git_3" href="#git_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git工作流程</h1>
+<h1 id="git_2"><a name="user-content-git_2" href="#git_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git工作流程</h1>
 <p>本章节我们将为大家介绍 Git 的工作流程。<br />
 一般工作流程如下：<br />
 1. 克隆 Git 资源作为工作目录。<br />
@@ -1113,8 +1113,8 @@ only.night@qq.com
 5. 提交修改。<br />
 6. 在修改完成后，如果发现错误，可以撤回提交并再次修改并提交。<br />
 下图展示了 Git 的工作流程：<br />
-<img alt="git流程图" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/git-process.png" /></p>
-<h1 id="git_4"><a name="user-content-git_4" href="#git_4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 工作区、暂存区和版本库</h1>
+<img alt="git流程图" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/git-process.png" /></p>
+<h1 id="git_3"><a name="user-content-git_3" href="#git_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 工作区、暂存区和版本库</h1>
 <h2 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>基本概念</h2>
 <p>我们先来理解下Git 工作区、暂存区和版本库概念</p>
 <ul>
@@ -1123,11 +1123,11 @@ only.night@qq.com
 <li><em>版本库：</em>工作区有一个隐藏目录.git，这个不算工作区，而是Git的版本库。</li>
 </ul>
 <p>下面这个图展示了工作区、版本库中的暂存区和版本库之间的关系：<br />
-<img alt="工作区间" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/workspace.jpg" /></p>
-<h1 id="git_5"><a name="user-content-git_5" href="#git_5" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 创建仓库</h1>
+<img alt="工作区间" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/workspace.jpg" /></p>
+<h1 id="git_4"><a name="user-content-git_4" href="#git_4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 创建仓库</h1>
 <p>本章节我们将为大家介绍如何创建一个 Git 仓库。<br />
 你可以使用一个已经存在的目录作为Git仓库。</p>
-<h2 id="git-init"><a name="user-content-git-init" href="#git-init" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git init</h2>
+<h2 id="git-init"><a name="user-content-git-init" href="#git-init" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>新建本地仓库 git init</h2>
 <p>Git 使用 git init 命令来初始化一个 Git 仓库，Git 的很多命令都需要在 Git 的仓库中运行，所以 git init 是使用 Git 的第一个命令。<br />
 在执行完成 git init 命令后，Git 仓库会生成一个 .git 目录，该目录包含了资源的所有元数据，其他的项目目录保持不变（不像 SVN 会在每个子目录生成 .svn 目录，Git 只在仓库的根目录生成 .git 目录）。</p>
 <h2 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>使用方法</h2>
@@ -1148,7 +1148,7 @@ $ git commit -m &quot;inital commit&quot;
 </code></pre>
 
 <p>以上命令将目录下以 .java 结尾及 README.md 文件提交到仓库中。</p>
-<h2 id="git-clone"><a name="user-content-git-clone" href="#git-clone" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git clone</h2>
+<h2 id="git-clone"><a name="user-content-git-clone" href="#git-clone" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>复制远程仓库 git clone</h2>
 <p>我们使用 git clone 从现有 Git 仓库中拷贝项目（类似 svn checkout）。<br />
 克隆仓库的命令格式为：</p>
 <pre><code class="bash">$ git clone &lt;repo&gt;
@@ -1172,7 +1172,7 @@ $ git commit -m &quot;inital commit&quot;
 <pre><code class="bash">$ git clone git://github.com/schacon/grit.git mygrit
 </code></pre>
 
-<h1 id="git_6"><a name="user-content-git_6" href="#git_6" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git基本操作</h1>
+<h1 id="git_5"><a name="user-content-git_5" href="#git_5" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git基本操作</h1>
 <p>Git 的工作就是创建和保存你项目的快照及与之后的快照进行对比。本章将对有关创建与提交你的项目快照的命令作介绍。</p>
 <h2 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>获取与创建项目命令</h2>
 <h3 id="git-init_1"><a name="user-content-git-init_1" href="#git-init_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git init</h3>
@@ -1216,7 +1216,7 @@ $ ls -a
 <p>默认情况下，Git 会按照你提供的 URL 所指示的项目的名称创建你的本地项目目录。 通常就是该 URL 最后一个 / 之后的项目名称。如果你想要一个不一样的名字， 你可以在该命令后加上你想要的名称。</p>
 <h2 id="_4"><a name="user-content-_4" href="#_4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>基本快照</h2>
 <p>Git 的工作就是创建和保存你的项目的快照及与之后的快照进行对比。本章将对有关创建与提交你的项目的快照的命令作介绍。</p>
-<h3 id="git-add"><a name="user-content-git-add" href="#git-add" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git add</h3>
+<h3 id="git-add"><a name="user-content-git-add" href="#git-add" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>添加文件到缓存 git add</h3>
 <p>git add 命令可将该文件添加到缓存，如我们添加以下两个文件：</p>
 <pre><code class="bash">$ touch README.md
 $ touch HelloWorld.java
@@ -1256,7 +1256,7 @@ A  README.md
 </code></pre>
 
 <p>当你要将你的修改包含在即将提交的快照里的时候，需要执行 git add。</p>
-<h3 id="git-status"><a name="user-content-git-status" href="#git-status" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git status</h3>
+<h3 id="git-status"><a name="user-content-git-status" href="#git-status" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>查看状态 git status</h3>
 <p>git status 以查看在你上次提交之后是否有修改。<br />
 我演示该命令的时候加了 -s 参数，以获得简短的结果输出。如果没加该参数会详细输出内容：</p>
 <pre><code class="bash">$ git status
@@ -1271,7 +1271,7 @@ Changes to be committed:
         new file:   README.md
 </code></pre>
 
-<h3 id="git-diff"><a name="user-content-git-diff" href="#git-diff" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git diff</h3>
+<h3 id="git-diff"><a name="user-content-git-diff" href="#git-diff" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>对比改动 git diff</h3>
 <p>执行 git diff 来查看执行 git status 的结果的详细信息。<br />
 git diff 命令显示已写入缓存与已修改但尚未写入缓存的改动的区别。git diff 有两个主要的应用场景。</p>
 <ul>
@@ -1339,7 +1339,7 @@ index 0000000..8123762
 +This is readme markdown file.
 </code></pre>
 
-<h3 id="git-commit"><a name="user-content-git-commit" href="#git-commit" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git commit</h3>
+<h3 id="git-commit"><a name="user-content-git-commit" href="#git-commit" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>提交代码到本地仓库 git commit</h3>
 <p>使用 git add 命令将想要快照的内容写入缓存区， 而执行 git commit 将缓存区内容添加到仓库中。<br />
 Git 为你的每一个提交都记录你的名字与电子邮箱地址，所以第一步需要配置用户名和邮箱地址。</p>
 <pre><code class="bash">$ git config --golbal user.name 'wyndam'
@@ -1400,7 +1400,7 @@ nothing to commit, working directory clean
  1 file changed, 1 insertion(+), 1 deletion(-)
 </code></pre>
 
-<h3 id="git-reset-head"><a name="user-content-git-reset-head" href="#git-reset-head" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git reset HEAD</h3>
+<h3 id="git-reset-head"><a name="user-content-git-reset-head" href="#git-reset-head" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>从缓存中移除文件 git reset HEAD</h3>
 <p>git reset HEAD 命令用于取消已缓存的内容。<br />
 我们先改动文件 README 文件，内容如下：</p>
 <pre><code>#README.md
@@ -1453,7 +1453,7 @@ nothing to commit, working directory clean
 </code></pre>
 
 <p>简而言之，执行 git reset HEAD 以取消之前 git add 添加，但不希望包含在下一提交快照中的缓存。</p>
-<h3 id="git-rm"><a name="user-content-git-rm" href="#git-rm" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git rm</h3>
+<h3 id="git-rm"><a name="user-content-git-rm" href="#git-rm" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>从缓存以及工作目录删除文件 git rm</h3>
 <p>git rm 会将条目从缓存区中移除。这与 git reset HEAD 将条目取消缓存是有区别的。 &ldquo;取消缓存&rdquo;的意思就是将缓存区恢复为我们做出修改之前的样子。<br />
 默认情况下，git rm file 会将文件从缓存区和你的硬盘中（工作目录）删除。<br />
 如果你要在工作目录中留着该文件，可以使用 git rm &ndash;cached：<br />
@@ -1471,7 +1471,7 @@ $ ls
 README.md
 </code></pre>
 
-<h3 id="git-mv"><a name="user-content-git-mv" href="#git-mv" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>git mv</h3>
+<h3 id="git-mv"><a name="user-content-git-mv" href="#git-mv" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>修改缓存中文件名 git mv</h3>
 <p>git mv 命令做得所有事情就是 git rm &ndash;cached 命令的操作， 重命名磁盘上的文件，然后再执行 git add 把新文件添加到缓存区。<br />
 我们先把刚移除的 README 添加回来：</p>
 <pre><code class="bash">$ git add README.md
@@ -1483,7 +1483,7 @@ $ ls
 README
 </code></pre>
 
-<h1 id="git_7"><a name="user-content-git_7" href="#git_7" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git分支管理</h1>
+<h1 id="git_6"><a name="user-content-git_6" href="#git_6" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git分支管理</h1>
 <p>几乎每一种版本控制系统都以某种形式支持分支。使用分支意味着你可以从开发主线上分离开来，然后在不影响主线的同时继续工作。<br />
 有人把 Git 的分支模型称为&rdquo;必杀技特性&rdquo;，而正是因为它，将 Git 从版本控制系统家族里区分出来。<br />
 创建分支命令：</p>
@@ -1500,8 +1500,8 @@ README
 </code></pre>
 
 <p>你可以多次合并到统一分支， 也可以选择在合并之后直接删除被并入的分支。</p>
-<h3 id="git_8"><a name="user-content-git_8" href="#git_8" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git分支管理</h3>
-<h4 id="_5"><a name="user-content-_5" href="#_5" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>列出分支</h4>
+<h3 id="git_7"><a name="user-content-git_7" href="#git_7" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git分支管理</h3>
+<h4 id="git-branch"><a name="user-content-git-branch" href="#git-branch" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>列出分支 git branch</h4>
 <p>列出分支基本命令：</p>
 <pre><code class="bash">git branch
 </code></pre>
@@ -1574,7 +1574,7 @@ README      test.txt    test2.txt
 
 <p>如你所见，我们创建了一个分支，在该分支的上下文中移除了一些文件，然后切换回我们的主分支，那些文件又回来了。<br />
 使用分支将工作切分开来，从而让我们能够在不同上下文中做事，并来回切换。</p>
-<h3 id="_6"><a name="user-content-_6" href="#_6" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>删除分支</h3>
+<h3 id="git-branch-d"><a name="user-content-git-branch-d" href="#git-branch-d" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>删除分支 git branch -d</h3>
 <p>删除分支命令：</p>
 <pre><code class="bash">git branch -d [branch name]
 </code></pre>
@@ -1591,7 +1591,7 @@ $ git branch
   newtest
 </code></pre>
 
-<h3 id="_7"><a name="user-content-_7" href="#_7" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>分支合并</h3>
+<h3 id="git-merge"><a name="user-content-git-merge" href="#git-merge" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>分支合并 git merge</h3>
 <p>一旦某分支有了独立内容，你终究会希望将它合并回到你的主分支。 你可以使用以下命令将任何分支合并到当前分支中去：</p>
 <pre><code class="bash">git merge
 </code></pre>
@@ -1616,7 +1616,7 @@ README  test.txt
 </code></pre>
 
 <p>以上实例中我们将 newtest 分支合并到主分支去，test2.txt 文件被删除。</p>
-<h3 id="_8"><a name="user-content-_8" href="#_8" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>合并冲突</h3>
+<h3 id="_5"><a name="user-content-_5" href="#_5" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>合并冲突</h3>
 <p>合并并不仅仅是简单的文件添加、移除的操作，Git 也会合并修改。</p>
 <pre><code class="bash">$ git branch
 * master
@@ -1698,7 +1698,7 @@ $ git commit
 [master 88afe0e] Merge branch 'change_site'
 </code></pre>
 
-<h1 id="git_9"><a name="user-content-git_9" href="#git_9" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 查看提交历史</h1>
+<h1 id="git-git-log"><a name="user-content-git-git-log" href="#git-git-log" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 查看提交历史 git log</h1>
 <p>在使用 Git 提交了若干更新之后，又或者克隆了某个项目，想回顾下提交历史，我们可以使用 git log 命令查看。<br />
 针对我们前一章节的操作，使用 git log 命令列出历史提交记录如下：</p>
 <pre><code class="bash">$ git log
@@ -1834,7 +1834,7 @@ b6c8d2d Documentation/remote-helpers: Add invocation section
 636db2c t3301: add tests to use --format=&quot;%N&quot;
 </code></pre>
 
-<h1 id="git_10"><a name="user-content-git_10" href="#git_10" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 标签</h1>
+<h1 id="git-git-tag"><a name="user-content-git-git-tag" href="#git-git-tag" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 标签 git tag</h1>
 <p>如果你达到一个重要的阶段，并希望永远记住那个特别的提交快照，你可以使用 git tag 给它打上标签。<br />
 比如说，我们想为我们的 w3cschoolcc 项目发布一个&rdquo;1.0&rdquo;版本。 我们可以用 git tag -a v1.0 命令给最新一次提交打上（HEAD）&rdquo;v1.0&rdquo;的标签。<br />
 -a 选项意为&rdquo;创建一个带注解的标签&rdquo;。 不用 -a 选项也可以执行的，但它不会记录这标签是啥时候打的，谁打的，也不会让你添加个标签的注解。 我推荐一直创建带注解的标签。</p>
@@ -1890,10 +1890,10 @@ v1.0
 <pre><code class="bash">git tag -s &lt;tagname&gt; -m &quot;w3cschool.cc标签&quot;
 </code></pre>
 
-<h1 id="git_11"><a name="user-content-git_11" href="#git_11" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 远程仓库</h1>
+<h1 id="git_8"><a name="user-content-git_8" href="#git_8" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Git 远程仓库</h1>
 <p>Git 并不像 SVN 那样有个中心服务器。<br />
 目前我们使用到的 Git 命令都是在本地执行，如果你想通过 Git 分享你的代码或者与其他开发人员合作。 你就需要将数据放到一台其他开发人员能够连接的服务器上。</p>
-<h2 id="_9"><a name="user-content-_9" href="#_9" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>添加远程库</h2>
+<h2 id="git-remote-add"><a name="user-content-git-remote-add" href="#git-remote-add" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>添加远程库 git remote add</h2>
 <p>要添加一个新的远程仓库，可以指定一个简单的名字，以便将来引用,命令格式如下：</p>
 <pre><code class="bash">git remote add [shortname] [url]
 </code></pre>
@@ -1906,7 +1906,7 @@ v1.0
 
 <p>后面的your_email@youremail.com改为你在github上注册的邮箱，之后会要求确认路径和输入密码，我们这使用默认的一路回车就行。成功的话会在~/下生成.ssh文件夹，进去，打开id_rsa.pub，复制里面的key。<br />
 回到github上，进入 Account Settings（账户配置），左边选择SSH Keys，Add SSH Key,title随便填，粘贴在你电脑上生成的key。</p>
-<p><img alt="Github SSH设置" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/git_ssh_settings.png" /></p>
+<p><img alt="Github SSH设置" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/git_ssh_settings.png" /></p>
 <p>为了验证是否成功，输入以下命令：</p>
 <pre><code>$ ssh -T git@github.com
 Hi onlynight! You've successfully authenticated, but GitHub does not provide shell access.
@@ -1914,11 +1914,11 @@ Hi onlynight! You've successfully authenticated, but GitHub does not provide she
 
 <p>输出以上结果证明已经正确配置密钥。</p>
 <p>之后登录后点击&rdquo; New repository &rdquo; 如下图所示：</p>
-<p><img alt="Github SSH设置" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo.png" /></p>
+<p><img alt="Github SSH设置" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo.png" /></p>
 <p>之后在在Repository name 填入 GitAdd(远程仓库名) ，description中填写描述&rdquo;git add test&rdquo;，其他保持默认设置，点击&rdquo;Create repository&rdquo;按钮，就成功地创建了一个新的Git仓库：</p>
-<p><img alt="Github SSH设置" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo2.png" /></p>
+<p><img alt="Github SSH设置" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo2.png" /></p>
 <p>创建成功后，显示如下信息：</p>
-<p><img alt="Github SSH设置" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo_finish.png" /></p>
+<p><img alt="Github SSH设置" src="///F://Program/Github/Readme/ReadmeDemo/Readmes/GitCourse/images/add_new_repo_finish.png" /></p>
 <p>以上信息告诉我们可以从这个仓库克隆出新的仓库，也可以把本地仓库的内容推送到GitHub仓库。<br />
 现在，我们根据GitHub的提示，在本地的仓库下运行命令：</p>
 <pre><code class="bash">$ ls
@@ -1936,7 +1936,7 @@ To git@github.com:onlynight/GitAdd.git
 Branch master set up to track remote branch master from origin.
 </code></pre>
 
-<h2 id="_10"><a name="user-content-_10" href="#_10" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>查看当前的远程库</h2>
+<h2 id="git-remote"><a name="user-content-git-remote" href="#git-remote" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>查看当前的远程库 git remote</h2>
 <p>要查看当前配置有哪些远程仓库，可以用命令：</p>
 <pre><code class="bash">git remote
 </code></pre>
@@ -1947,17 +1947,67 @@ $ git remote -v
 </code></pre>
 
 <p>执行时加上 -v 参数，你还可以看到每个别名的实际链接地址。</p>
-<h2 id="_11"><a name="user-content-_11" href="#_11" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>提取远程仓库</h2>
+<h2 id="_6"><a name="user-content-_6" href="#_6" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>提取远程仓库</h2>
 <p>Git 有两个命令用来提取远程仓库的更新。</p>
-<h3 id="1_1"><a name="user-content-1_1" href="#1_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. 从远程仓库下载新分支与数据：</h3>
+<h3 id="1-git-fetch"><a name="user-content-1-git-fetch" href="#1-git-fetch" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. 从远程仓库下载新分支与数据： git fetch</h3>
 <pre><code class="bash">git fetch
 </code></pre>
 
 <p>该命令执行完后需要执行git merge 远程分支到你所在的分支。</p>
-<h3 id="2_1"><a name="user-content-2_1" href="#2_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. 从远端仓库提取数据并尝试合并到当前分支：</h3>
+<h3 id="2-git-pull"><a name="user-content-2-git-pull" href="#2-git-pull" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. 从远端仓库提取数据并尝试合并到当前分支： git pull</h3>
 <pre><code class="bash">git pull
 </code></pre>
 
 <p>该命令就是在执行 git fetch 之后紧接着执行 git merge 远程分支到你所在的任意分支。<br />
 假设你配置好了一个远程仓库，并且你想要提取更新的数据，你可以首先执行 git fetch [alias] 告诉 Git 去获取它有你没有的数据，然后你可以执行 git merge [alias]/[branch] 以将服务器上的任何更新（假设有人这时候推送到服务器了）合并到你的当前分支。</p>
-<p>接下来我们在 Github 上点击&rdquo;w3cschool菜鸟教程测试.txt&rdquo; 并在线修改它。之后我们在本地更新修改。</p></article></body></html>
+<p>接下来我们在 Github 上点击&rdquo;test.txt&rdquo; 并在线修改它。之后我们在本地更新修改。</p>
+<pre><code class="bash">$ git fetch origin
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+From github.com:onlynight/GitAdd
+   774112b..37be49b  master     -&gt; origin/master
+</code></pre>
+
+<p>以上信息&rdquo;774112b..37be49b  master     -&gt; origin/master&rdquo; 说明 master 分支已被更新，我们可以使用以下命令将更新同步到本地：</p>
+<pre><code class="bash">$ git merge origin/master
+Updating 774112b..37be49b
+Fast-forward
+ test.txt | 1 +
+ 1 file changed, 1 insertion(+)
+</code></pre>
+
+<h2 id="git-push"><a name="user-content-git-push" href="#git-push" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>推送到远程仓库 git push</h2>
+<p>推送你的新分支与数据到某个远端仓库命令:</p>
+<pre><code class="bash">git push [alias] [branch]
+</code></pre>
+
+<p>以上命令将你的 [branch] 分支推送成为 [alias] 远程仓库上的 [branch] 分支，实例如下。</p>
+<pre><code class="bash">$ git push origin master
+Everything up-to-date
+</code></pre>
+
+<h2 id="git-push_1"><a name="user-content-git-push_1" href="#git-push_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>删除远程分支 git push <alias> :<branch name></h2>
+<p>注意：如果要<em>删除远程分支</em>同样也是使用push命令，在分支前加上&rdquo;:&rdquo;表示<em>删除远程分支</em>，代码如下：</p>
+<pre><code class="bash">$ git push origin :&lt;branch name&gt;
+</code></pre>
+
+<h2 id="git-remote-rm"><a name="user-content-git-remote-rm" href="#git-remote-rm" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>删除本地仓库的远程仓库链接 git remote rm</h2>
+<p>删除远程仓库你可以使用命令：</p>
+<pre><code class="bash">git remote rm [alias]
+</code></pre>
+
+<pre><code class="bash">$ git remote -v
+origin  git@github.com:onlynight/GitAdd.git (fetch)
+origin  git@github.com:onlynight/GitAdd.git (push)
+$ git remote -v
+origin  git@github.com:onlynight/GitAdd.git (fetch)
+origin  git@github.com:onlynight/GitAdd.git (push)
+origin2 git@github.com:onlnynight/GitAdd.git (fetch)
+origin2 git@github.com:onlnynight/GitAdd.git (push)
+$ git remote rm origin2
+$ git remote -v
+origin  git@github.com:onlynight/GitAdd.git (fetch)
+origin  git@github.com:onlynight/GitAdd.git (push)
+</code></pre></article></body></html>

@@ -16,7 +16,7 @@ Git 与 SVN 区别点：
 4. GIT没有一个全局的版本号，而SVN有：目前为止这是跟SVN相比GIT缺少的最大的一个特征。
 5. GIT的内容完整性要优于SVN：GIT的内容存储使用的是SHA-1哈希算法。这能确保代码内容的完整性，确保在遇到磁盘故障和网络问题时降低对版本库的破坏。
 
-##Git配置
+##Git配置 git config
 Git 提供了一个叫做 git config 的工具，专门用来配置或读取相应的工作环境变量。
 这些环境变量，决定了 Git 在各个环节的具体工作方式和行为。这些变量可以存放在以下三个不同的地方：
 >/etc/gitconfig 文件：系统中对所有用户都普遍适用的配置。若使用 git config 时用 --system 选项，读写的就是这个文件。
@@ -27,7 +27,7 @@ Git 提供了一个叫做 git config 的工具，专门用来配置或读取相�
 
 >此外，Git 还会尝试找寻 /etc/gitconfig 文件，只不过看当初 Git 装在什么目录，就以此作为根目录来定位。
 
-###1.用户信息
+###1.用户信息 git config user
 配置个人的用户名称和电子邮件地址：
 
 ```bash
@@ -55,7 +55,7 @@ $ git config --global merge.tool vimdiff
 Git 可以理解 kdiff3，tkdiff，meld，xxdiff，emerge，vimdiff，gvimdiff，ecmerge，和 opendiff 等合并工具的输出信息。
 当然，你也可以指定使用自己开发的工具，具体怎么做可以参阅后面的章节。
 
-###4.查看配置信息
+###4.查看配置信息 git config --list
 要检查已有的配置信息，可以使用 git config --list 命令：
 
 ```bash
@@ -132,7 +132,7 @@ only.night@qq.com
 本章节我们将为大家介绍如何创建一个 Git 仓库。
 你可以使用一个已经存在的目录作为Git仓库。
 
-##git init
+##新建本地仓库 git init
 Git 使用 git init 命令来初始化一个 Git 仓库，Git 的很多命令都需要在 Git 的仓库中运行，所以 git init 是使用 Git 的第一个命令。
 在执行完成 git init 命令后，Git 仓库会生成一个 .git 目录，该目录包含了资源的所有元数据，其他的项目目录保持不变（不像 SVN 会在每个子目录生成 .svn 目录，Git 只在仓库的根目录生成 .git 目录）。
 
@@ -161,7 +161,7 @@ $ git commit -m "inital commit"
 
 以上命令将目录下以 .java 结尾及 README.md 文件提交到仓库中。
 
-##git clone
+##复制远程仓库 git clone
 我们使用 git clone 从现有 Git 仓库中拷贝项目（类似 svn checkout）。
 克隆仓库的命令格式为：
 
@@ -252,7 +252,7 @@ $ ls -a
 ##基本快照
 Git 的工作就是创建和保存你的项目的快照及与之后的快照进行对比。本章将对有关创建与提交你的项目的快照的命令作介绍。
 
-###git add
+###添加文件到缓存 git add
 git add 命令可将该文件添加到缓存，如我们添加以下两个文件：
 
 ```bash
@@ -303,7 +303,7 @@ A  README.md
 
 当你要将你的修改包含在即将提交的快照里的时候，需要执行 git add。
 
-###git status
+###查看状态 git status
 git status 以查看在你上次提交之后是否有修改。
 我演示该命令的时候加了 -s 参数，以获得简短的结果输出。如果没加该参数会详细输出内容：
 
@@ -320,7 +320,7 @@ Changes to be committed:
         new file:   README.md
 ```
 
-###git diff
+###对比改动 git diff
 执行 git diff 来查看执行 git status 的结果的详细信息。
 git diff 命令显示已写入缓存与已修改但尚未写入缓存的改动的区别。git diff 有两个主要的应用场景。
 
@@ -393,7 +393,7 @@ index 0000000..8123762
 +This is readme markdown file.
 ```
 
-###git commit
+###提交代码到本地仓库 git commit
 使用 git add 命令将想要快照的内容写入缓存区， 而执行 git commit 将缓存区内容添加到仓库中。
 Git 为你的每一个提交都记录你的名字与电子邮箱地址，所以第一步需要配置用户名和邮箱地址。
 
@@ -468,7 +468,7 @@ $ git commit -am "修改HelloWorld.java文件"
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
-###git reset HEAD
+###从缓存中移除文件 git reset HEAD
 git reset HEAD 命令用于取消已缓存的内容。
 我们先改动文件 README 文件，内容如下：
 
@@ -532,7 +532,7 @@ nothing to commit, working directory clean
 
 简而言之，执行 git reset HEAD 以取消之前 git add 添加，但不希望包含在下一提交快照中的缓存。
 
-###git rm
+###从缓存以及工作目录删除文件 git rm
 git rm 会将条目从缓存区中移除。这与 git reset HEAD 将条目取消缓存是有区别的。 "取消缓存"的意思就是将缓存区恢复为我们做出修改之前的样子。
 默认情况下，git rm file 会将文件从缓存区和你的硬盘中（工作目录）删除。
 如果你要在工作目录中留着该文件，可以使用 git rm --cached：
@@ -554,7 +554,7 @@ $ ls
 README.md
 ```
 
-###git mv
+###修改缓存中文件名 git mv
 git mv 命令做得所有事情就是 git rm --cached 命令的操作， 重命名磁盘上的文件，然后再执行 git add 把新文件添加到缓存区。
 我们先把刚移除的 README 添加回来：
 
@@ -596,7 +596,7 @@ git merge
 
 ###Git分支管理
 
-####列出分支
+####列出分支 git branch
 列出分支基本命令：
 
 ```bash
@@ -684,7 +684,7 @@ README		test.txt	test2.txt
 如你所见，我们创建了一个分支，在该分支的上下文中移除了一些文件，然后切换回我们的主分支，那些文件又回来了。
 使用分支将工作切分开来，从而让我们能够在不同上下文中做事，并来回切换。
 
-###删除分支
+###删除分支 git branch -d
 删除分支命令：
 
 ```bash
@@ -705,7 +705,7 @@ $ git branch
   newtest
 ```
 
-###分支合并
+###分支合并 git merge
 一旦某分支有了独立内容，你终究会希望将它合并回到你的主分支。 你可以使用以下命令将任何分支合并到当前分支中去：
 
 ```bash
@@ -828,7 +828,7 @@ $ git commit
 [master 88afe0e] Merge branch 'change_site'
 ```
 
-#Git 查看提交历史
+#Git 查看提交历史 git log
 在使用 Git 提交了若干更新之后，又或者克隆了某个项目，想回顾下提交历史，我们可以使用 git log 命令查看。
 针对我们前一章节的操作，使用 git log 命令列出历史提交记录如下：
 
@@ -976,7 +976,7 @@ b6c8d2d Documentation/remote-helpers: Add invocation section
 636db2c t3301: add tests to use --format="%N"
 ```
 
-#Git 标签
+#Git 标签 git tag
 如果你达到一个重要的阶段，并希望永远记住那个特别的提交快照，你可以使用 git tag 给它打上标签。
 比如说，我们想为我们的 w3cschoolcc 项目发布一个"1.0"版本。 我们可以用 git tag -a v1.0 命令给最新一次提交打上（HEAD）"v1.0"的标签。
 -a 选项意为"创建一个带注解的标签"。 不用 -a 选项也可以执行的，但它不会记录这标签是啥时候打的，谁打的，也不会让你添加个标签的注解。 我推荐一直创建带注解的标签。
@@ -1048,7 +1048,7 @@ git tag -s <tagname> -m "w3cschool.cc标签"
 Git 并不像 SVN 那样有个中心服务器。
 目前我们使用到的 Git 命令都是在本地执行，如果你想通过 Git 分享你的代码或者与其他开发人员合作。 你就需要将数据放到一台其他开发人员能够连接的服务器上。
 
-##添加远程库
+##添加远程库 git remote add
 要添加一个新的远程仓库，可以指定一个简单的名字，以便将来引用,命令格式如下：
 
 ```bash
@@ -1108,7 +1108,7 @@ To git@github.com:onlynight/GitAdd.git
 Branch master set up to track remote branch master from origin.
 ```
 
-##查看当前的远程库
+##查看当前的远程库 git remote
 要查看当前配置有哪些远程仓库，可以用命令：
 
 ```bash
@@ -1126,7 +1126,7 @@ $ git remote -v
 ##提取远程仓库
 Git 有两个命令用来提取远程仓库的更新。
 
-###1. 从远程仓库下载新分支与数据：
+###1. 从远程仓库下载新分支与数据： git fetch
 
 ```bash
 git fetch
@@ -1134,7 +1134,7 @@ git fetch
 
 该命令执行完后需要执行git merge 远程分支到你所在的分支。
 
-###2. 从远端仓库提取数据并尝试合并到当前分支：
+###2. 从远端仓库提取数据并尝试合并到当前分支： git pull
 
 ```bash
 git pull
@@ -1165,7 +1165,7 @@ Fast-forward
  1 file changed, 1 insertion(+)
 ```
 
-##推送到远程仓库
+##推送到远程仓库 git push
 推送你的新分支与数据到某个远端仓库命令:
 
 ```bash
@@ -1179,7 +1179,16 @@ $ git push origin master
 Everything up-to-date
 ```
 
-##删除远程仓库
+
+##删除远程分支 git push <alias> :<branch name> 
+注意：如果要*删除远程分支*同样也是使用push命令，在分支前加上":"表示*删除远程分支*，代码如下：
+
+```bash
+$ git push origin :<branch name>
+```
+
+
+##删除本地仓库的远程仓库链接 git remote rm
 删除远程仓库你可以使用命令：
 
 ```bash
