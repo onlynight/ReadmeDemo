@@ -291,7 +291,7 @@ To https://github.com/onlynight/MyFirstGitProj
 第二个参数是说要push到哪个远程仓库
 第三个参数是说要push到远程仓库的哪个分支，默认为master
 
-以上就完成了栗子2的全部内容，你现在就可以把你的项目https://github.com/onlynight/MyFirstGitProj分享给你的小伙伴啦。
+以上就完成了栗子2的全部内容，你现在就可以把你的项目 https://github.com/onlynight/MyFirstGitProj 分享给你的小伙伴啦。
 
 
 [Git详细教程&命令行查询Github]: https://github.com/onlynight/GitCourse
