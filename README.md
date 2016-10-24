@@ -6,14 +6,14 @@ ReadmeDemo
 ##使用到的插件
 
 1. 和```README.md```在同一目录下的```README.html```是使用```Sublime Text 3```的```MarkDown Preview```插件生成的。
-2. 这两个插件的Github地址在这里，你可以去查看详细的使用教程：
+2. 本地编辑MarkDown文本高亮使用了```Sublime Text 3```的```MarkDown Extended```插件，预览效果是这样的：
+
+	![MarkDwon Extended Preview](./images/mardown_extended_preview.png)
+
+3. 这两个插件的Github地址在这里，你可以去查看详细的使用教程：
 
 - [https://github.com/revolunet/sublimetext-markdown-preview]
 - [https://github.com/jonschlinkert/sublime-markdown-extended]
-
-3. 本地编辑MarkDown文本高亮使用了```Sublime Text 3```的```MarkDown Extended```插件，预览效果是这样的：
-
-![MarkDwon Extended Preview](./images/mardown_extended_preview.png)
 
 [https://github.com/revolunet/sublimetext-markdown-preview]: https://github.com/revolunet/sublimetext-markdown-preview
 [https://github.com/jonschlinkert/sublime-markdown-extended]: https://github.com/jonschlinkert/sublime-markdown-extended
