@@ -1,6 +1,8 @@
 自定义RulerView
 ==============
 
+你可以在Github上看到这篇文章以及源码：https://github.com/onlynight/RulerView
+
 #概述
 本文主要讲如何继承View实现一个自定义View，然后通过实例RulerView的实现逻辑帮助读者更好的理解自定义View的设计与实现。开讲之前先给博客大神打个广告《Android开发艺术探索》的作者任玉刚的这本书会给想要进阶学习的一个好的开始，带你入门带你飞。
 
