@@ -14,10 +14,12 @@ RulerView的具体功能如下：
 5. 在左下角显示测量结果。
 
 示意图如下：
+
 ![示意图](./images/sketch_map.png)
 字写的略丑，大家见谅（233）。
 
 效果图如下：
+
 ![效果图](./images/design_sketch.jpg)
 
 
