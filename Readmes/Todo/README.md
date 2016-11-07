@@ -1,10 +1,12 @@
 My README.md todo list
 ======================
 
-#Markdown Course
+#Markdown Course 
+**√ CHECK FINISH**
 Teach user how to use markdown to write blog article on github, CSDN or jianshu.
 
 #Android Gradle Course
+**√ CHECK FINISH**
 Create your own gradle moudle on github use jitpack.io 
 
 #Shaped ImageView Analyse
