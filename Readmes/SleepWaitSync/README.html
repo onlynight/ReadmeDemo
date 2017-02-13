@@ -1014,240 +1014,149 @@ body .markdown-body
     page-break-after: avoid;
   }
 }
-</style><title>README</title></head><body><article class="markdown-body"><h1 id="androidview"><a name="user-content-androidview" href="#androidview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Android自定义水波纹动画View</h1>
-<p>源码是双11的时候就写好了，但是我觉得当天发不太好，所以推迟了几天，没想到过了双11女友就变成了前女友，桑心。唉不说了，来看看代码吧。</p>
-<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>展示效果</h1>
-<h2 id="hi"><a name="user-content-hi" href="#hi" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Hi前辈</h2>
-<p>话不多说，我们先来看看效果：</p>
-<p><img alt="Hi前辈搜索预览" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/hiqianbei_demo.gif" /></p>
-<p>这一张是《Hi前辈》的搜索预览图，你可以在这里下载这个APP查看更多效果：<a href="http://www.wandoujia.com/apps/com.superlity.hiqianbei">http://www.wandoujia.com/apps/com.superlity.hiqianbei</a></p>
-<h2 id="lsearchview"><a name="user-content-lsearchview" href="#lsearchview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>LSearchView</h2>
-<p><img alt="LSearchView" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/lsearchview_demo.gif" /></p>
-<p>这是一个MD风格的搜索框，集成了ripple动画以及search时的loading，使用很简单，如果你也需要这样的搜索控件不妨来试试：<a href="https://github.com/onlynight/LSearchView">https://github.com/onlynight/LSearchView</a></p>
-<h2 id="rippleeverywhere"><a name="user-content-rippleeverywhere" href="#rippleeverywhere" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>RippleEverywhere</h2>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_demo.gif" /></p>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_principle.gif" /></p>
-<p>这是一个水波纹动画支持库，由于使用暂时只支持Android4.0以上版本。<a href="https://github.com/onlynight/RippleEverywhere">https://github.com/onlynight/RippleEverywhere</a></p>
-<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>实现原理</h1>
-<p>使用属性动画完成该动画的实现，由于android2.3以下已经不是主流机型，故只兼容4.0以上系统。</p>
-<p>关于属性动画，如果还有童鞋不了解可以去看看hongyang大神的这篇文章：<a href="http://blog.csdn.net/lmj623565791/article/details/38067475">http://blog.csdn.net/lmj623565791/article/details/38067475</a>。</p>
-<blockquote>
-<p>在我看来属性动画实际上就类似于定时器，所谓定时器就是独立在主线程之外的另外一个用于计时的线程，每当到达你设定时间的时候这个线程就会通知你；属性动画也不光是另外一个线程，他能够操作主线程UI元素属性就说明了它内部已经做了线程同步。</p>
-</blockquote>
-<h2 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>基本原理</h2>
-<p>我们先来看下关键代码：</p>
-<pre><code class="java">@Override
-protected void onDraw(Canvas canvas) {
-    if (running) {
-        // get canvas current state
-        final int state = canvas.save();
-        // add circle to path to crate ripple animation
-        // attention: you must reset the path first,
-        // otherwise the animation will run wrong way.
-        ripplePath.reset();
-        ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-        canvas.clipPath(ripplePath);
+</style><title>README</title></head><body><article class="markdown-body"><h1 id="javasleepwait"><a name="user-content-javasleepwait" href="#javasleepwait" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>java中sleep()、wait()相同与不同详解</h1>
+<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>相同</h1>
+<p>java中Thread#sleep和Object#wait方法都是暂停当前线程，当前线程让出CPU占用。并不存在调用sleep后还占用CPU，而调用wait不占用CPU这么一说，如果有看到类似的说法请自动过滤。</p>
+<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>不同</h1>
+<h3 id="1-sleepthreadwaitobject"><a name="user-content-1-sleepthreadwaitobject" href="#1-sleepthreadwaitobject" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. sleep方法是Thread类的一个静态方法，而wait是Object的一个方法。</h3>
+<h3 id="2-sleepsleepwaitnotifynotifyobjectwaitwait"><a name="user-content-2-sleepsleepwaitnotifynotifyobjectwaitwait" href="#2-sleepsleepwaitnotifynotifyobjectwaitwait" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. 调用sleep后无法手动唤醒，调用sleep必须传入休眠时间，待休眠超时线程会自动唤醒；调用wait后可使用notify（notify同样是属于Object的方法）唤醒线程，同时wait也有带参数的方法，wait传入休眠时间后，待休眠超时线程将会被自动唤醒。</h3>
+<h3 id="3-sleepwaitwait"><a name="user-content-3-sleepwaitwait" href="#3-sleepwaitwait" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>3. 如果线程中使用了同步锁的情况下。sleep调用后如果未到休眠时间同步锁是不会释放的；wait必须在同步代码块中调用，wait调用后将会释放同步锁。</h3>
+<h1 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>解释说明</h1>
+<h2 id="1"><a name="user-content-1" href="#1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. 同步锁是什么，同步代码块是什么？</h2>
+<p>同步锁是什么？试想多台电脑链接一台打印机，如果三台调用同时打印该先给谁打印，或者说是同时给多台电脑打印？打印机是有限的资源，其工作原理也决定了他不能同时完成多想任务，所以打印机打印的时候必须有先后顺序，如果打印机正在使用的过程中有人请求打印，那么这个请求不能马上执行，当上一个打印任务完成后才能继续执行这个请求。这时候就诞生了同步锁的概念，我正在使用打印机的时候我把它锁起来，别人访问打印机时发现打印机被锁就只能等待；我使用完打印机后将打印机的锁打开，别人这时候访问打印机发现打印机没有锁那么他就可以使用打印机了。我们公共的部分是有一把锁，当我们要使用共享资源的时候先查看这把锁有没有锁，我们把这个锁称之为同步锁。</p>
+<p>java中没有PV的概念，但是如果出现了多线程的情况也是有办法处理的，java为我们提供了synchronized关键字，当我们需要处理并发问题的时候就可以使用synchronized关键字来给对象或者类加锁。需要注意的是，只有当同步代码块中的代码执行完成之后同步锁才会被释放。</p>
+<pre><code class="java">// 给对象加锁1
+Object obj = new Object();
+synchronized (obj) {
+    try {
+        obj.wait();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}
 
-        // the {@link View#onDraw} method must be called before
-        // {@link Canvas#restoreToCount}, or the change will not appear.
-        super.onDraw(canvas);
-        canvas.restoreToCount(state);
-        return;
+// 给对象加锁2
+// this指针代表的是当前类的一个对象，所以对this加锁相当于对单个对象加锁，这个类的单个对象访问是互斥的，但是每个对象之间相互不影响。
+synchronized (this){
+    this.wait();
+}
+
+// 给类加锁1
+// 对类加锁，这个类的所有对象访问都是互斥的，当有一个对象被占用时，其他对象都是不能访问的。
+// synchronized 参数传入类名，表示对类加锁。
+synchronized (Demo.class){
+    Demo.class.wait();
+}
+
+// 给类加锁12
+// 静态属性属于类而不属于对象，所以对类的静态属性加锁实际上是对类进行加锁操作。
+// 对类的某一个静态属性加锁
+synchronized (Demo.STATIC_VALUE){
+}
+
+</code></pre>
+
+<h2 id="2"><a name="user-content-2" href="#2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. 栗子</h2>
+<pre><code class="java">/**
+ * Created by lion on 2017/2/5.
+ */
+public class ThreadDemo {
+
+    public Float value = 1.23f;
+
+    public static void main(String[] args) {
+        demo1();
+        demo2();
     }
 
-    // in a normal condition, you should call the
-    // super.onDraw the draw the normal situation.
-    super.onDraw(canvas);
+    /**
+     * demo1中验证{@see Thread#sleep(long)}使线程休眠后不影响同步锁的作用。
+     */
+    private static void demo1() {
+        final ThreadDemo threadDemo = new ThreadDemo();
+
+        System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                threadDemo.value);
+
+        new Thread(() -&gt; {
+            synchronized (threadDemo) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                        threadDemo.value);
+            }
+        }).start();
+
+        // 这里为了保证前一个线程比我们后一个线程先执行让当前线程休眠一下。
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(() -&gt; {
+            synchronized (threadDemo) {
+                threadDemo.value = 2.34f;
+                System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                        threadDemo.value);
+            }
+        }).start();
+    }
+
+    /**
+     * demo2验证{@see Object#wait()}调用后立即释放了释放了同步锁，
+     * 并且演示了如果唤醒一个被wait的线程。
+     */
+    private static void demo2() {
+        final ThreadDemo threadDemo = new ThreadDemo();
+
+        System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                threadDemo.value);
+
+        new Thread(() -&gt; {
+            synchronized (threadDemo) {
+                try {
+                    threadDemo.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                        threadDemo.value);
+            }
+        }).start();
+
+        // 这里为了保证前一个线程比我们后一个线程先执行让当前线程休眠一下。
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(() -&gt; {
+            synchronized (threadDemo) {
+                System.out.println(Thread.currentThread().getName() + &quot; value = &quot; +
+                        threadDemo.value);
+                threadDemo.notify();
+            }
+        }).start();
+    }
 }
 </code></pre>
 
-<ul>
-<li>
-<p>Canvas#save()和Canvas#restoreToCount()<br />
-    这个两个方法用于绘制状态的保存与恢复。绘制之前先保存上一次的状态；绘制完成后恢复前一次的状态；以此类推直到running成为false，中间的这个过程就是动画的过程。</p>
-</li>
-<li>
-<p>Path#addCircle()和Canvas#clipPath()<br />
-    addCircle用于在path上绘制一个圈；clipPath绘制剪切后的path（只绘制path内的区域，其他区域不绘制）。</p>
-</li>
-</ul>
-<pre><code class="java">radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
-
-/**
- * This method will be called by {@link this#radiusAnimator}
- * reflection calls.
- *
- * @param value animation current value
- */
-public void setAnimValue(float value) {
-    this.radius = value * maxRadius;
-    System.out.println(&quot;radius = &quot; + this.radius);
-    invalidate();
-}
+<p>demo1运行结果：</p>
+<pre><code class="java">main value = 1.23
+Thread-0 value = 1.23
+Thread-1 value = 2.34
 </code></pre>
 
-<p>这一段是动画的动效关键，首先要有一个随着时间推移而变化的值，当每次这个值变化的时候我们需要跟新界面让view重新绘制调用onDraw方法，我们不能手动调用onDraw方法，系统给我们提供的invalidate会强制view重绘进而调用onDraw方法。</p>
-<p>以上就是这个动画的全部关键原理了，下面我们来一份完整的源码：</p>
-<pre><code class="java">import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Path;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageView;
+<p>从demo1的运行结果我们可以看到，Thread-1在等待Thread-0执行完成后才得以执行，这说明了sleep方法在同步代码块中不能释放同步锁。</p>
+<p>demo2运行结果：</p>
+<pre><code class="java">main value = 1.23
+Thread-1 value = 1.23
+Thread-0 value = 1.23
+</code></pre>
 
-/**
- * Created by lion on 2016/11/11.
- * &lt;p&gt;
- * RippleImageView use the {@link Path#addCircle} function
- * to draw the view when {@link RippleImageView#onDraw} called.
- * &lt;p&gt;
- * When you call {@link View#invalidate()} function,then the
- * {@link View#onDraw(Canvas)} will be called. In that way you
- * can use {@link Path#addCircle} to draw every frame, you will
- * see the ripple animation.
- */
-
-public class RippleImageView extends ImageView {
-
-    // view center x
-    private int centerX = 0;
-    // view center y
-    private int centerY = 0;
-    // ripple animation current radius
-    private float radius = 0;
-    // the max radius that ripple animation need
-    private float maxRadius = 0;
-    // record the ripple animation is running
-    private boolean running = false;
-
-    private ObjectAnimator radiusAnimator;
-    private Path ripplePath;
-
-    public RippleImageView(Context context) {
-        super(context);
-        init();
-    }
-
-    public RippleImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    @TargetApi(21)
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
-    private void init() {
-        ripplePath = new Path();
-
-        // initial the animator, when animValue change,
-        // radiusAnimator will call {@link this#setAnimValue} method.
-        radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
-        radiusAnimator.setDuration(1000);
-        radiusAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        radiusAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                running = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                running = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        centerX = (right - left) / 2;
-        centerY = (bottom - top) / 2;
-        maxRadius = maxRadius(left, top, right, bottom);
-    }
-
-    /**
-     * Calculate the max ripple animation radius.
-     *
-     * @param left   view left
-     * @param top    view top
-     * @param right  view right
-     * @param bottom view bottom
-     * @return
-     */
-    private float maxRadius(int left, int top, int right, int bottom) {
-        return (float) Math.sqrt(Math.pow(right - left, 2) + Math.pow(bottom - top, 2) / 2);
-    }
-
-    /**
-     * This method will be called by {@link this#radiusAnimator}
-     * reflection calls.
-     *
-     * @param value animation current value
-     */
-    public void setAnimValue(float value) {
-        this.radius = value * maxRadius;
-        System.out.println(&quot;radius = &quot; + this.radius);
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (running) {
-            // get canvas current state
-            final int state = canvas.save();
-            // add circle to path to crate ripple animation
-            // attention: you must reset the path first,
-            // otherwise the animation will run wrong way.
-            ripplePath.reset();
-            ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-            canvas.clipPath(ripplePath);
-
-            // the {@link View#onDraw} method must be called before
-            // {@link Canvas#restoreToCount}, or the change will not appear.
-            super.onDraw(canvas);
-            canvas.restoreToCount(state);
-            return;
-        }
-
-        // in a normal condition, you should call the
-        // super.onDraw the draw the normal situation.
-        super.onDraw(canvas);
-    }
-
-    /**
-     * call the {@link Animator#start()} function to start the animation.
-     */
-    public void startAnimation() {
-        if (radiusAnimator.isRunning()) {
-            radiusAnimator.cancel();
-        }
-
-        radiusAnimator.start();
-    }
-}
-
-</code></pre></article></body></html>
+<p>从demo2的运行结果我们可以看到调用wait后同步锁被释放，因而Thread-1中的同步代码块才得以执行，Thread-1执行完成后再唤醒Thread-0让其执行。</p></article></body></html>

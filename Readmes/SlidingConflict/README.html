@@ -1014,240 +1014,461 @@ body .markdown-body
     page-break-after: avoid;
   }
 }
-</style><title>README</title></head><body><article class="markdown-body"><h1 id="androidview"><a name="user-content-androidview" href="#androidview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Android自定义水波纹动画View</h1>
-<p>源码是双11的时候就写好了，但是我觉得当天发不太好，所以推迟了几天，没想到过了双11女友就变成了前女友，桑心。唉不说了，来看看代码吧。</p>
-<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>展示效果</h1>
-<h2 id="hi"><a name="user-content-hi" href="#hi" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Hi前辈</h2>
-<p>话不多说，我们先来看看效果：</p>
-<p><img alt="Hi前辈搜索预览" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/hiqianbei_demo.gif" /></p>
-<p>这一张是《Hi前辈》的搜索预览图，你可以在这里下载这个APP查看更多效果：<a href="http://www.wandoujia.com/apps/com.superlity.hiqianbei">http://www.wandoujia.com/apps/com.superlity.hiqianbei</a></p>
-<h2 id="lsearchview"><a name="user-content-lsearchview" href="#lsearchview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>LSearchView</h2>
-<p><img alt="LSearchView" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/lsearchview_demo.gif" /></p>
-<p>这是一个MD风格的搜索框，集成了ripple动画以及search时的loading，使用很简单，如果你也需要这样的搜索控件不妨来试试：<a href="https://github.com/onlynight/LSearchView">https://github.com/onlynight/LSearchView</a></p>
-<h2 id="rippleeverywhere"><a name="user-content-rippleeverywhere" href="#rippleeverywhere" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>RippleEverywhere</h2>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_demo.gif" /></p>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_principle.gif" /></p>
-<p>这是一个水波纹动画支持库，由于使用暂时只支持Android4.0以上版本。<a href="https://github.com/onlynight/RippleEverywhere">https://github.com/onlynight/RippleEverywhere</a></p>
-<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>实现原理</h1>
-<p>使用属性动画完成该动画的实现，由于android2.3以下已经不是主流机型，故只兼容4.0以上系统。</p>
-<p>关于属性动画，如果还有童鞋不了解可以去看看hongyang大神的这篇文章：<a href="http://blog.csdn.net/lmj623565791/article/details/38067475">http://blog.csdn.net/lmj623565791/article/details/38067475</a>。</p>
-<blockquote>
-<p>在我看来属性动画实际上就类似于定时器，所谓定时器就是独立在主线程之外的另外一个用于计时的线程，每当到达你设定时间的时候这个线程就会通知你；属性动画也不光是另外一个线程，他能够操作主线程UI元素属性就说明了它内部已经做了线程同步。</p>
-</blockquote>
-<h2 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>基本原理</h2>
-<p>我们先来看下关键代码：</p>
-<pre><code class="java">@Override
-protected void onDraw(Canvas canvas) {
-    if (running) {
-        // get canvas current state
-        final int state = canvas.save();
-        // add circle to path to crate ripple animation
-        // attention: you must reset the path first,
-        // otherwise the animation will run wrong way.
-        ripplePath.reset();
-        ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-        canvas.clipPath(ripplePath);
+</style><title>README</title></head><body><article class="markdown-body"><h1 id="android"><a name="user-content-android" href="#android" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Android滑动冲突解决方法</h1>
+<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>滑动冲突</h1>
+<p>首先讲解一下什么是滑动冲突。当你需要在一个ScrollView中嵌套使用ListView或者RecyclerView的时候你会发现只有ScrollView能够滑动，而ListView或RecyclerView不能滑动，这个就违背了我们写这段代码的意愿。我们想要的结果是当我们滑动ListView的时候ListView滑动，滑动ListView以外的地方的时候ScrollView滑动。这时候滑动冲突就产生了，我们需要想办法解决这个冲突。</p>
+<h1 id="view-touch"><a name="user-content-view-touch" href="#view-touch" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>View Touch事件分发</h1>
+<p>首先我们了解下Android的控件组织结构。View是显示组件的基类，ViewGroup继承自View是布局的基类。ViewGroup中可包含View和ViewGroup，这样就形成了View树。View的Touch事件总是从View根节点开始向下传递的，根据点击的位置判断该传递给哪个子View，直到子节点再没有子节点这时候，如果这个事件被该View消耗那么事件的传递就此结束，如果该View没有使用这个事件那么这个事件会依次向上传递直到有View消耗了这个事件，如果没有View消耗这个事件，那么该事件就会被传递给Activity处理。以上就是Vieww Touch事件传递的过程。</p>
+<p>我们来看View的dispatchEvent方法：</p>
+<pre><code class="java">//View.java
+/**
+ * Pass the touch screen motion event down to the target view, or this
+ * view if it is the target.
+ *
+ * @param event The motion event to be dispatched.
+ * @return True if the event was handled by the view, false otherwise.
+ */
+public boolean dispatchTouchEvent(MotionEvent event) {
+    boolean result = false;
 
-        // the {@link View#onDraw} method must be called before
-        // {@link Canvas#restoreToCount}, or the change will not appear.
-        super.onDraw(canvas);
-        canvas.restoreToCount(state);
+    if (onFilterTouchEventForSecurity(event)) {
+        //noinspection SimplifiableIfStatement
+        ListenerInfo li = mListenerInfo;
+        if (li != null &amp;&amp; li.mOnTouchListener != null
+                &amp;&amp; (mViewFlags &amp; ENABLED_MASK) == ENABLED
+                &amp;&amp; li.mOnTouchListener.onTouch(this, event)) {
+            result = true;
+        }
+
+        if (!result &amp;&amp; onTouchEvent(event)) {
+            result = true;
+        }
+    }
+
+    return result;
+}
+</code></pre>
+
+<p>从这段代码我们可以看出OnTouchListener的优先级高于onTouchEvent。<br />
+下面我们再来看看ViewGroup的dispatchTouchEvent方法:</p>
+<pre><code class="java">//ViewGroup.java
+@Override
+public boolean dispatchTouchEvent(MotionEvent ev) {
+    ...
+
+    boolean handled = false;
+    if (actionMasked == MotionEvent.ACTION_DOWN
+            || mFirstTouchTarget != null) {
+        final boolean disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0;
+        if (!disallowIntercept) {
+            intercepted = onInterceptTouchEvent(ev);
+            ev.setAction(action); // restore action in case it was changed
+        } else {
+            intercepted = false;
+        }
+    } else {
+        // There are no touch targets and this action is not an initial down
+        // so this view group continues to intercept touches.
+        intercepted = true;
+    }
+
+    // Check for cancelation.
+    final boolean canceled = resetCancelNextUpFlag(this)
+            || actionMasked == MotionEvent.ACTION_CANCEL;
+
+    //如果没有拦截再分发下去处理
+    if (!canceled &amp;&amp; !intercepted) {
+        ...
+        if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
+            ...
+        }
+        ...
+    }
+
+    return handled;
+}
+
+/**
+ * Transforms a motion event into the coordinate space of a particular child view,
+ * filters out irrelevant pointer ids, and overrides its action if necessary.
+ * If child is null, assumes the MotionEvent will be sent to this ViewGroup instead.
+ */
+private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
+        View child, int desiredPointerIdBits) {
+    final boolean handled;
+
+    // Canceling motions is a special case.  We don't need to perform any transformations
+    // or filtering.  The important part is the action, not the contents.
+    final int oldAction = event.getAction();
+    if (cancel || oldAction == MotionEvent.ACTION_CANCEL) {
+        event.setAction(MotionEvent.ACTION_CANCEL);
+        if (child == null) {
+            handled = super.dispatchTouchEvent(event);
+        } else {
+            handled = child.dispatchTouchEvent(event);
+        }
+        event.setAction(oldAction);
+        return handled;
+    }
+
+    ...
+}
+</code></pre>
+
+<p>可以看到ViewGroup在处理事件前有一个touch事件是否被拦截onInterceptTouchEvent的判断，如果被拦截则不再向下一级分发；如果没有拦截则向下分发，处理方式会根据ViewGroup中是否包含子元素来判断，如果包含子元素则将事件交由子元素处理touch事件<code>handled = child.dispatchTouchEvent(event);</code>，如果不包含子元素则由自身处理<code>handled = child.dispatchTouchEvent(event);</code>处理流程和View相同。</p>
+<p><img alt="View Touch事件分发" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/SlidingConflict/images/touch_event_flow.png" /></p>
+<p>实线箭头为touch事件正向传递，虚线为向上传递touch事件。</p>
+<p>通过上面的分发的逻辑我们可以知道父控件有能力把事件不传递给子View，从而不让子控件接收Touch事件，那么子控件有没有能力让父控件失去响应Touch事件的能力呢，下面我们来看看具体的源码，看源码的顺序是由下而上的，这回我们反其道而行，我们知道事件的入口然后依次向下找。</p>
+<h1 id="activityviewgroup"><a name="user-content-activityviewgroup" href="#activityviewgroup" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Activity分发事件到ViewGroup</h1>
+<p>根据上面的图我们知道View的touch事件是由Activity传递过来的，那么我们先看看Activity有没有类似的方法，正如我们所料，Activity的dispatchTouchEvent函数如下：</p>
+<pre><code class="java">/**
+ * Called to process touch screen events.  You can override this to
+ * intercept all touch screen events before they are dispatched to the
+ * window.  Be sure to call this implementation for touch screen events
+ * that should be handled normally.
+ *
+ * @param ev The touch screen event.
+ *
+ * @return boolean Return true if this event was consumed.
+ */
+public boolean dispatchTouchEvent(MotionEvent ev) {
+    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+        onUserInteraction();
+    }
+    if (getWindow().superDispatchTouchEvent(ev)) {
+        return true;
+    }
+    return onTouchEvent(ev);
+}
+</code></pre>
+
+<p>显而易见我们要看的是<code>getWindow().superDispatchTouchEvent(ev)</code>，我们深入进去看到Window类中的这个方法：</p>
+<pre><code class="java">//Window.java
+/**
+ * Used by custom windows, such as Dialog, to pass the touch screen event
+ * further down the view hierarchy. Application developers should
+ * not need to implement or call this.
+ *
+ */
+public abstract boolean superDispatchTouchEvent(MotionEvent event);
+</code></pre>
+
+<p>Window类是个抽象类，它的唯一实现类是PhoneWindow，PhoneWindow类中的实现如下：</p>
+<pre><code class="java">//PhoneWindow.java
+@Override
+public boolean superDispatchTouchEvent(MotionEvent event) {
+    return mDecor.superDispatchTouchEvent(event);
+}
+</code></pre>
+
+<p>mDecor是DecorView，我们看看这个DectorView是从哪里来的：</p>
+<pre><code class="java">//PhoneWindow.java
+private void installDecor() {
+    if (mDecor == null) {
+        mDecor = generateDecor();
+        ...
+    }
+
+    ...
+
+    if (mContentParent == null) {
+        mContentParent = generateLayout(mDecor);
+    }
+
+    ...
+}
+
+protected DecorView generateDecor() {
+    return new DecorView(getContext(), -1);
+}
+
+@Override
+public void setContentView(int layoutResID) {
+    // Note: FEATURE_CONTENT_TRANSITIONS may be set in the process of installing the window
+    // decor, when theme attributes and the like are crystalized. Do not check the feature
+    // before this happens.
+    if (mContentParent == null) {
+        installDecor();
+    } else if (!hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
+            mContentParent.removeAllViews();
+    }
+
+    if (hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
+        final Scene newScene = Scene.getSceneForLayout(mContentParent, layoutResID,
+                getContext());
+        transitionTo(newScene);
+    } else {
+        mLayoutInflater.inflate(layoutResID, mContentParent);
+    }
+    final Callback cb = getCallback();
+    if (cb != null &amp;&amp; !isDestroyed()) {
+        cb.onContentChanged();
+    }
+}
+
+protected ViewGroup generateLayout(DecorView decor) {
+    ...
+
+    View in = mLayoutInflater.inflate(layoutResource, null);
+    decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+    mContentRoot = (ViewGroup) in;
+
+    ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
+    if (contentParent == null) {
+        throw new RuntimeException(&quot;Window couldn't find content container view&quot;);
+    }
+
+    ...
+
+    return contentParent;
+}
+
+//Activity.java
+/**
+ * Set the activity content from a layout resource.  The resource will be
+ * inflated, adding all top-level views to the activity.
+ *
+ * @param layoutResID Resource ID to be inflated.
+ *
+ * @see #setContentView(android.view.View)
+ * @see #setContentView(android.view.View, android.view.ViewGroup.LayoutParams)
+ */
+public void setContentView(int layoutResID) {
+    getWindow().setContentView(layoutResID);
+    initWindowDecorActionBar();
+}
+</code></pre>
+
+<p>这里我们就看出了mDecorView中包含了mContentParent，并且DecorView继承自FramLayout，所以touch事件的分发也符合View的事件分发，mDecorView之后会添加到Activity关联的Window上（这里我们不再深究），下面我们来看DecorView的superDispatchTouchEvent：</p>
+<pre><code class="java">//PhoneWindow.java#DecorView
+public boolean superDispatchTouchEvent(MotionEvent event) {
+    return super.dispatchTouchEvent(event);
+}
+</code></pre>
+
+<p>至此，activity的dispatchTouchEvent方法就最终分发到了我们的布局上，最后总结一下：</p>
+<pre><code class="java">Activity#dispatchTouchEvent -&gt; PhoneWindow#superDispatchTouchEvent -&gt;
+DecorView#superDispatchTouchEvent -&gt; ViewGroup#dispatchTouchEvent -&gt; View#dispatchTouchEvent
+</code></pre>
+
+<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>解决滑动冲突的原理</h1>
+<p>看了上面的源码解析，我们知道Viewtouch事件分发过程中重要的三个函数：</p>
+<ul>
+<li><code>dispatchTouchEvent</code> 负责touch事件的分发</li>
+<li><code>onIntercepterTouchEvent</code> 负责拦截touch事件</li>
+<li><code>onTouchEvent</code> 最终处理touch事件</li>
+</ul>
+<p>其中dispatchTouchEvent和onIntercepterTouchEvent可以控制touch事件流不传递给子控件，这两个方法中可以控制事件流的向下分发，那么是不是有方法控制事件流向上分发呢？我们找到ViewGroup中有这样一个函数：</p>
+<pre><code class="java">/**
+ * {@inheritDoc}
+ */
+public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+    if (disallowIntercept == ((mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0)) {
+        // We're already in this state, assume our ancestors are too
         return;
     }
 
-    // in a normal condition, you should call the
-    // super.onDraw the draw the normal situation.
-    super.onDraw(canvas);
+    if (disallowIntercept) {
+        mGroupFlags |= FLAG_DISALLOW_INTERCEPT;
+    } else {
+        mGroupFlags &amp;= ~FLAG_DISALLOW_INTERCEPT;
+    }
+
+    // Pass it up to our parent
+    if (mParent != null) {
+        mParent.requestDisallowInterceptTouchEvent(disallowIntercept);
+    }
+}
+
+//ViewGroup.java
+@Override
+public boolean dispatchTouchEvent(MotionEvent ev) {
+    ...
+
+    boolean handled = false;
+    if (actionMasked == MotionEvent.ACTION_DOWN
+            || mFirstTouchTarget != null) {
+        final boolean disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0;
+        if (!disallowIntercept) {
+            intercepted = onInterceptTouchEvent(ev);
+            ev.setAction(action); // restore action in case it was changed
+        } else {
+            intercepted = false;
+        }
+    } else {
+        // There are no touch targets and this action is not an initial down
+        // so this view group continues to intercept touches.
+        intercepted = true;
+    }
+
+    // Check for cancelation.
+    final boolean canceled = resetCancelNextUpFlag(this)
+            || actionMasked == MotionEvent.ACTION_CANCEL;
+
+    //如果没有拦截再分发下去处理
+    if (!canceled &amp;&amp; !intercepted) {
+        ...
+        if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
+            ...
+        }
+        ...
+    }
+
+    return handled;
 }
 </code></pre>
 
-<ul>
-<li>
-<p>Canvas#save()和Canvas#restoreToCount()<br />
-    这个两个方法用于绘制状态的保存与恢复。绘制之前先保存上一次的状态；绘制完成后恢复前一次的状态；以此类推直到running成为false，中间的这个过程就是动画的过程。</p>
-</li>
-<li>
-<p>Path#addCircle()和Canvas#clipPath()<br />
-    addCircle用于在path上绘制一个圈；clipPath绘制剪切后的path（只绘制path内的区域，其他区域不绘制）。</p>
-</li>
-</ul>
-<pre><code class="java">radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
-
-/**
- * This method will be called by {@link this#radiusAnimator}
- * reflection calls.
- *
- * @param value animation current value
- */
-public void setAnimValue(float value) {
-    this.radius = value * maxRadius;
-    System.out.println(&quot;radius = &quot; + this.radius);
-    invalidate();
+<p>实际上requestDisallowInterceptTouchEvent是修改了disallowIntercept的状态，再结合ViewGroup的dispatchTouchEvent方法查看，我们就明白这个方法的最终意义。ViewGroup的子元素可以通过调用这个方法禁止ViewGroup拦截touch事件。到这里我们就找到了自下而上的touch事件的拦截方法。</p>
+<h1 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>滑动冲突两种解决办法</h1>
+<h2 id="1"><a name="user-content-1" href="#1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. 外部拦截法</h2>
+<p>通过上面的原理分析我们知道我们可以在dispatchTouchEvent的时候不分发事件或者onInterceptTouchEvent时候拦截事件，实际上onInterceptTouchEvent方法是一个空方法，是android专门提供给我们处理touch事件拦截的方法，所以这里我们在onInterceptTouchEvent方法中拦截touch事件。</p>
+<p>具体做法就是当你不想把事件传递给子控件的时候在onInterceptTouchEvent方法中返回true即可拦截事件，这时候子控件将不会再接收到这一次的touch事件流（所谓touch事件流是以ACTION_DOWN开始，中间包含若干个ACTION_MOVE，以ACTION_UP结束的一连串事件）。伪代码如下：</p>
+<pre><code class="java">public boolean onInterceptTouchEvent(MotionEvent ev) {
+    if ( condition ) {
+        return true;
+    }
+    return false;
 }
 </code></pre>
 
-<p>这一段是动画的动效关键，首先要有一个随着时间推移而变化的值，当每次这个值变化的时候我们需要跟新界面让view重新绘制调用onDraw方法，我们不能手动调用onDraw方法，系统给我们提供的invalidate会强制view重绘进而调用onDraw方法。</p>
-<p>以上就是这个动画的全部关键原理了，下面我们来一份完整的源码：</p>
-<pre><code class="java">import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Path;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageView;
-
-/**
- * Created by lion on 2016/11/11.
- * &lt;p&gt;
- * RippleImageView use the {@link Path#addCircle} function
- * to draw the view when {@link RippleImageView#onDraw} called.
- * &lt;p&gt;
- * When you call {@link View#invalidate()} function,then the
- * {@link View#onDraw(Canvas)} will be called. In that way you
- * can use {@link Path#addCircle} to draw every frame, you will
- * see the ripple animation.
- */
-
-public class RippleImageView extends ImageView {
-
-    // view center x
-    private int centerX = 0;
-    // view center y
-    private int centerY = 0;
-    // ripple animation current radius
-    private float radius = 0;
-    // the max radius that ripple animation need
-    private float maxRadius = 0;
-    // record the ripple animation is running
-    private boolean running = false;
-
-    private ObjectAnimator radiusAnimator;
-    private Path ripplePath;
-
-    public RippleImageView(Context context) {
-        super(context);
-        init();
-    }
-
-    public RippleImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    @TargetApi(21)
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
-    private void init() {
-        ripplePath = new Path();
-
-        // initial the animator, when animValue change,
-        // radiusAnimator will call {@link this#setAnimValue} method.
-        radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
-        radiusAnimator.setDuration(1000);
-        radiusAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        radiusAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                running = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                running = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        centerX = (right - left) / 2;
-        centerY = (bottom - top) / 2;
-        maxRadius = maxRadius(left, top, right, bottom);
-    }
-
-    /**
-     * Calculate the max ripple animation radius.
-     *
-     * @param left   view left
-     * @param top    view top
-     * @param right  view right
-     * @param bottom view bottom
-     * @return
-     */
-    private float maxRadius(int left, int top, int right, int bottom) {
-        return (float) Math.sqrt(Math.pow(right - left, 2) + Math.pow(bottom - top, 2) / 2);
-    }
-
-    /**
-     * This method will be called by {@link this#radiusAnimator}
-     * reflection calls.
-     *
-     * @param value animation current value
-     */
-    public void setAnimValue(float value) {
-        this.radius = value * maxRadius;
-        System.out.println(&quot;radius = &quot; + this.radius);
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (running) {
-            // get canvas current state
-            final int state = canvas.save();
-            // add circle to path to crate ripple animation
-            // attention: you must reset the path first,
-            // otherwise the animation will run wrong way.
-            ripplePath.reset();
-            ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-            canvas.clipPath(ripplePath);
-
-            // the {@link View#onDraw} method must be called before
-            // {@link Canvas#restoreToCount}, or the change will not appear.
-            super.onDraw(canvas);
-            canvas.restoreToCount(state);
-            return;
-        }
-
-        // in a normal condition, you should call the
-        // super.onDraw the draw the normal situation.
-        super.onDraw(canvas);
-    }
-
-    /**
-     * call the {@link Animator#start()} function to start the animation.
-     */
-    public void startAnimation() {
-        if (radiusAnimator.isRunning()) {
-            radiusAnimator.cancel();
-        }
-
-        radiusAnimator.start();
+<p>这里的condition将会再下一章节中具体讲解。</p>
+<h2 id="2"><a name="user-content-2" href="#2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. 内部拦截法</h2>
+<p>首先，我们让父控件拦截除了ACTION_DOWN以外的所有事件，如果连ACTION_DOWN都拦截那么子控件将无法收到任何touch事件：</p>
+<pre><code class="java">@Override
+public boolean onInterceptTouchEvent(MotionEvent event) {
+    int action = event.getAction();
+    if (action == MotionEvent.ACTION_DOWN) {
+        return false;
+    } else {
+        return true;
     }
 }
+</code></pre>
 
-</code></pre></article></body></html>
+<p>然后，在控件的内部分发事件的时候请求需要的事件（实际上就是禁止父控件拦截事件）：</p>
+<pre><code class="java">@Override
+public boolean dispatchTouchEvent(MotionEvent ev) {
+    switch (ev.getAction()){
+        case MotionEvent.ACTION_DOWN:
+            //通知父容器不要拦截事件
+            parent.requestDisallowInterceptTouchEvent(true);
+            break;
+        case MotionEvent.ACTION_MOVE:
+
+            if ( &lt;condition&gt; ){
+                //通知父容器拦截此事件
+                parent.requestDisallowInterceptTouchEvent(false);
+            }
+            break;
+        case MotionEvent.ACTION_UP:
+            parent.requestDisallowInterceptTouchEvent(false);
+            break;
+        default:
+            break;
+    }
+
+    return super.dispatchTouchEvent(ev);
+}
+</code></pre>
+
+<p>这样，就可以解决touch事件的冲突问题，从控件本身解决。内部拦截法使用起来稍显复杂，需要修改两个控件，一般情况下我们都通过外部拦截法解决滑动冲突，如果有特殊情况需要使用内部拦截法才会使用内部拦截法。</p>
+<h1 id="condition"><a name="user-content-condition" href="#condition" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>事件拦截Condition</h1>
+<p>试想以下情况：</p>
+<p><img alt="ScrollView和MapView冲突" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/SlidingConflict/images/scrollview.png" /></p>
+<p>MapView的功能是内部可以任意滑动（包括上下，左右以及任意方向滑动），ScrollView需要上下滑动。这时候我们在MapView内部上下滑动时会出现什么结果？我们期望的结果是MapView内部滑动，但是我们看到的实际情况却是ScrollView在上下滑动，滑动冲突就产生了，解决这个滑动冲突的方法很简单，直接上代码：</p>
+<pre><code class="java">@Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (isMapViewTouched(ev)) {
+            return false;
+        } else {
+            return super.onInterceptTouchEvent(ev);
+        }
+    }
+
+private boolean isMapViewTouched(MotionEvent ev) {
+    if (getChildCount() == 1) {
+        float touchX = ev.getX();
+        float touchY = ev.getY() + getScrollY();
+
+        LinearLayout baseLinear = (LinearLayout) getChildAt(0);
+        for (int i = 0; i &lt; baseLinear.getChildCount(); i++) {
+            View child = baseLinear.getChildAt(i);
+
+            // add map view you want ignore
+            if (isMapView(child)) {
+                if (touchX &lt; child.getRight() &amp;&amp; touchX &gt; child.getLeft() &amp;&amp;
+                        touchY &lt; child.getBottom() &amp;&amp; touchY &gt; child.getTop()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+private boolean isMapView(View child) {
+    return child instanceof MapView ||
+            child instanceof com.google.android.gms.maps.MapView;
+}
+</code></pre>
+
+<p>isMapViewTouched这个函数就是我们这个情况下的condition，具体的含义就是当前点击的是MapView那么所有的touch事件都不允许拦截，交由MapView处理。</p>
+<p>这是一种很简单的滑动冲突情况，没有判断滑动的方向以及速度等因素，一般的我们通过判断滑动的方向作为判断条件，下面我们再来看一种情况：</p>
+<p><img alt="ViewPager和ListView冲突" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/SlidingConflict/images/viewpager.png" /></p>
+<p>ViewPager需要左右滑动，ListView需要上下滑动，当我们斜向滑动时就出现了滑动冲突。实际上ViewPage已经解决了这种滑动冲突，这里我们假定它没有解决这种滑动冲突，我们自己来解决这个滑动冲突。当我们斜向滑动时候示意图如下：</p>
+<p><img alt="斜向滑动示意图" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/SlidingConflict/images/sliding.png" /></p>
+<p>当我们从start滑动到end时，x方向的坐标变化我们称之为dx，y方向的坐标变化我们称之为dy。</p>
+<ol>
+<li>当dx&gt;dy时我们视其为水平滑动</li>
+<li>当dx&lt;dy时我们视其为竖直滑动</li>
+</ol>
+<p>通过外部拦截法的代码如下：</p>
+<pre><code class="java">//ViewPager.java
+int lastX = -1;
+int lastY = -1;
+boolean isHorizontal = false;
+boolean hasDirection = false;
+
+@Override
+public boolean onInterceptTouchEvent(MotionEvent ev) {
+    final int action = ev.getAction() &amp; MotionEventCompat.ACTION_MASK;
+
+    switch( action ){
+        case MotionEvent.ACTION_DOWN:
+            lastX = ev.getX();
+            lastY = ev.getY();
+            break;
+        case MotionEvent.ACTION_MOVE:
+            int currentX = ev.getX();
+            int currentY = ev.getY();
+            int dx = Math.abs(currentX - lastX);
+            int dy = Math.abs(currentY - lastY);
+
+            // 这里为了保证用户体验，当我们第一次滑动的方向即为这次touch事件流的滑动方向
+            if ( hasDirection ) {
+                return isHorizontal;
+            } else {
+                if ( dx &gt; dy ) { // 水平滑动
+                    isHorizontal = true;
+                    return true;
+                } else { // 竖直滑动
+                    isHorizontal = false;
+                    return false;
+                }
+            }
+
+            hasDirection = true;
+
+            break;
+        case MotionEvent.ACTION_UP:
+            hasDirection = false;
+            break;
+    }
+
+    return super.onInterceptTouchEvent(ev);
+}
+</code></pre>
+
+<h1 id="_4"><a name="user-content-_4" href="#_4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>滑动冲突解决拓展</h1>
+<p>滑动冲突的解决方法我们已经知道了，以后无论遇到多么复杂的情况解决滑动冲突的原则都是不变的，根据你的业务需求进行不同的事件拦截即可。</p></article></body></html>

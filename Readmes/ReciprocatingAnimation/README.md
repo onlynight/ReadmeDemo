@@ -1,6 +1,8 @@
 Android自定义水波纹动画View
 =========================
 
+源码是双11的时候就写好了，但是我觉得当天发不太好，所以推迟了几天，没想到过了双11女友就变成了前女友，桑心。唉不说了，来看看代码吧。
+
 #展示效果
 
 ##Hi前辈
@@ -18,7 +20,11 @@ Android自定义水波纹动画View
 
 ##RippleEverywhere
 
+女友的照片：
+
 ![Ripple Demo](./images/ripple_demo.gif)
+
+女友的照片：
 
 ![Ripple Demo](./images/ripple_principle.gif)
 

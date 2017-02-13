@@ -7,6 +7,9 @@
 
 ![TagLayout预览图](./images/taglayout.gif)
 
+我已经将它做成了gradle的依赖，你可以方便的引入android studio使用。
+https://github.com/onlynight/TagLayout
+
 #概述
 
 一般的，我们自定义布局的原则就是继承现有的布局，这样可以少写很多不必要的代码，但是现有的布局如果不能满足需求我们就要继承ViewGroup实现其中的所有流程了。下面我们先说明几个概念：

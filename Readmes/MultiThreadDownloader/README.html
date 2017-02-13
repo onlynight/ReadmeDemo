@@ -1014,240 +1014,522 @@ body .markdown-body
     page-break-after: avoid;
   }
 }
-</style><title>README</title></head><body><article class="markdown-body"><h1 id="androidview"><a name="user-content-androidview" href="#androidview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Android自定义水波纹动画View</h1>
-<p>源码是双11的时候就写好了，但是我觉得当天发不太好，所以推迟了几天，没想到过了双11女友就变成了前女友，桑心。唉不说了，来看看代码吧。</p>
-<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>展示效果</h1>
-<h2 id="hi"><a name="user-content-hi" href="#hi" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Hi前辈</h2>
-<p>话不多说，我们先来看看效果：</p>
-<p><img alt="Hi前辈搜索预览" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/hiqianbei_demo.gif" /></p>
-<p>这一张是《Hi前辈》的搜索预览图，你可以在这里下载这个APP查看更多效果：<a href="http://www.wandoujia.com/apps/com.superlity.hiqianbei">http://www.wandoujia.com/apps/com.superlity.hiqianbei</a></p>
-<h2 id="lsearchview"><a name="user-content-lsearchview" href="#lsearchview" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>LSearchView</h2>
-<p><img alt="LSearchView" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/lsearchview_demo.gif" /></p>
-<p>这是一个MD风格的搜索框，集成了ripple动画以及search时的loading，使用很简单，如果你也需要这样的搜索控件不妨来试试：<a href="https://github.com/onlynight/LSearchView">https://github.com/onlynight/LSearchView</a></p>
-<h2 id="rippleeverywhere"><a name="user-content-rippleeverywhere" href="#rippleeverywhere" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>RippleEverywhere</h2>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_demo.gif" /></p>
-<p>女友的照片：</p>
-<p><img alt="Ripple Demo" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/ReciprocatingAnimation/images/ripple_principle.gif" /></p>
-<p>这是一个水波纹动画支持库，由于使用暂时只支持Android4.0以上版本。<a href="https://github.com/onlynight/RippleEverywhere">https://github.com/onlynight/RippleEverywhere</a></p>
-<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>实现原理</h1>
-<p>使用属性动画完成该动画的实现，由于android2.3以下已经不是主流机型，故只兼容4.0以上系统。</p>
-<p>关于属性动画，如果还有童鞋不了解可以去看看hongyang大神的这篇文章：<a href="http://blog.csdn.net/lmj623565791/article/details/38067475">http://blog.csdn.net/lmj623565791/article/details/38067475</a>。</p>
-<blockquote>
-<p>在我看来属性动画实际上就类似于定时器，所谓定时器就是独立在主线程之外的另外一个用于计时的线程，每当到达你设定时间的时候这个线程就会通知你；属性动画也不光是另外一个线程，他能够操作主线程UI元素属性就说明了它内部已经做了线程同步。</p>
-</blockquote>
-<h2 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>基本原理</h2>
-<p>我们先来看下关键代码：</p>
-<pre><code class="java">@Override
-protected void onDraw(Canvas canvas) {
-    if (running) {
-        // get canvas current state
-        final int state = canvas.save();
-        // add circle to path to crate ripple animation
-        // attention: you must reset the path first,
-        // otherwise the animation will run wrong way.
-        ripplePath.reset();
-        ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-        canvas.clipPath(ripplePath);
-
-        // the {@link View#onDraw} method must be called before
-        // {@link Canvas#restoreToCount}, or the change will not appear.
-        super.onDraw(canvas);
-        canvas.restoreToCount(state);
-        return;
-    }
-
-    // in a normal condition, you should call the
-    // super.onDraw the draw the normal situation.
-    super.onDraw(canvas);
-}
+</style><title>README</title></head><body><article class="markdown-body"><h1 id="android"><a name="user-content-android" href="#android" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>android 多线程下载，断点续传，线程池</h1>
+<p>你可以在这里看到这个demo的源码:<br />
+<a href="https://github.com/onlynight/MultiThreadDownloader">https://github.com/onlynight/MultiThreadDownloader</a></p>
+<h1 id="_1"><a name="user-content-_1" href="#_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>效果图</h1>
+<p><img alt="效果图" src="///E://Code/Github/Readme/ReadmeDemo/Readmes/MultiThreadDownloader/images/mddemo.gif" /></p>
+<p>这张效果图是同时开启三个下载任务，限制下载线程数量的效果图。</p>
+<h1 id="_2"><a name="user-content-_2" href="#_2" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>多线程下载原理</h1>
+<p>多线程下载的原理就是将下载任务分割成一个个小片段再将每个小片段分配给各个线程进行下载。<br />
+例如一个文件大小为100M，我们决定使用4个线程下载，那么每个线程下载的大小即为25M，每个线程的起始以及结束位置依次如下：</p>
+<p>0: 0-25M<br />
+1: 25-50M<br />
+2: 50-75M<br />
+3: 75-END</p>
+<p>下载请求使用的是Http GET方法，GET请求允许我们设置参数请求的数据的范围：</p>
+<pre><code class="java">HttpURLConnection conn = (HttpURLConnection)
+                        new URL(&quot;download url&quot;).openConnection();
+// 设置http为get方法
+conn.setRequestMethod(&quot;GET&quot;);
+// 设置http请求的范围
+conn.setRequestProperty(&quot;Range&quot;, &quot;bytes=&quot; + startPos + &quot;-&quot; + endPos);
 </code></pre>
 
+<p>多线程访问文件需要创建RandamAccessFile：</p>
+<pre><code class="java">RandomAccessFile threadFile = new RandomAccessFile(
+                        fileDownloader.getFileSavePath() + File.separator +
+                                fileDownloader.getFilename(), &quot;rwd&quot;);
+threadFile.seek(startPos);
+</code></pre>
+
+<h1 id="_3"><a name="user-content-_3" href="#_3" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>断点续传原理</h1>
+<p>端点续传要求我们将之前下载过的文件片段保存下来，并且记录上次最后的下载位置。下次继续下载的时候从上次记录的位置开始下载即可，无需再从头下载。</p>
+<h1 id="_4"><a name="user-content-_4" href="#_4" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>线程池作用</h1>
+<p>线程池的原理分析和使用请查看者几篇文章：<br />
+<a href="http://blog.csdn.net/u010687392/article/details/49850803">http://blog.csdn.net/u010687392/article/details/49850803</a><br />
+<a href="http://blog.csdn.net/qq_17250009/article/details/50906508">http://blog.csdn.net/qq_17250009/article/details/50906508</a></p>
+<p>试想如果我们有100个下载任务，我们让每个任务分成3个线程下载，那么每个任务都需要4个线程，如果100个任务同时开启下载那么就意味着需要同时启动400个线程执行下载任务，这样势必会影响app性能。</p>
+<p>像上面这样大量的创建线程的操作势必会影响操作系统的性能，等这些任务执行完成后销毁线程同样也会消耗很多的系统资源，所以java中提出了线程池的概念。</p>
+<p>下面我们来分析线程池是如何节约系统资源的。</p>
+<p>从时间角度：</p>
 <ul>
-<li>
-<p>Canvas#save()和Canvas#restoreToCount()<br />
-    这个两个方法用于绘制状态的保存与恢复。绘制之前先保存上一次的状态；绘制完成后恢复前一次的状态；以此类推直到running成为false，中间的这个过程就是动画的过程。</p>
-</li>
-<li>
-<p>Path#addCircle()和Canvas#clipPath()<br />
-    addCircle用于在path上绘制一个圈；clipPath绘制剪切后的path（只绘制path内的区域，其他区域不绘制）。</p>
-</li>
+<li>创线程的时间我们假定它为: t1</li>
+<li>线程执行的时间我们假定为: t2</li>
+<li>销毁线程的时间我们假定为: t3</li>
 </ul>
-<pre><code class="java">radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
+<p>就用上例我们计算其耗时为：</p>
+<p>T = 100(t1+t2+t3)</p>
+<p>我们使用固定上限线程数量的线程池耗时为：</p>
+<p>T1 = 5(t1+t3)+100t2</p>
+<p>显然固定线程上限线程池所需的时间短了很多，固定数量线程池节约了线程创建和销毁的时间，使用线程复用方法避免了线程的频繁创建和销毁，不仅节约了时间同时节约了系统资源。</p>
+<h1 id="_5"><a name="user-content-_5" href="#_5" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>关键代码</h1>
+<p>下载线程：</p>
+<pre><code class="java">import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
- * This method will be called by {@link this#radiusAnimator}
- * reflection calls.
- *
- * @param value animation current value
+ * Created by lion on 2017/2/10.
  */
-public void setAnimValue(float value) {
-    this.radius = value * maxRadius;
-    System.out.println(&quot;radius = &quot; + this.radius);
-    invalidate();
+
+public class DownloadRunnable implements Runnable {
+    private int threadId = -1;
+    private FileDownloader fileDownloader;
+    private int downloadedSize = 0;
+
+    private int startPos = -1;
+    private int endPos = -1;
+    private int downloadLength = 0;
+
+    private boolean isFinish;
+    private boolean isStart;
+
+    public DownloadRunnable(FileDownloader fileDownloader, int threadId, int blockSize,
+                            int downloadedSize) {
+        this.fileDownloader = fileDownloader;
+        this.threadId = threadId;
+        int fileSize = fileDownloader.getFileSize();
+        this.startPos = blockSize * threadId + downloadedSize;
+        this.endPos = blockSize * (threadId + 1) &lt; fileSize ?
+                blockSize * (threadId + 1) : fileSize;
+        this.downloadedSize = downloadedSize;
+    }
+
+    @Override
+    public void run() {
+        if (startPos &gt;= endPos) {
+            isFinish = true;
+        } else {
+            try {
+                isStart = true;
+                isFinish = false;
+                HttpURLConnection conn = (HttpURLConnection)
+                        new URL(fileDownloader.getDownloadUrl()).openConnection();
+                conn.setConnectTimeout(FileDownloader.getConnectionTimeOut());
+                conn.setRequestMethod(&quot;GET&quot;);
+
+                //set accept file meta-data type
+                conn.setRequestProperty(&quot;Accept&quot;, &quot;image/gif, image/jpeg, image/pjpeg,&quot; +
+                        &quot; image/pjpeg, application/x-shockwave-flash, application/xaml+xml, &quot; +
+                        &quot;application/vnd.ms-xpsdocument, application/x-ms-xbap, &quot; +
+                        &quot;application/x-ms-application, application/vnd.ms-excel, &quot; +
+                        &quot;application/vnd.ms-powerpoint, application/msword, */*&quot;);
+
+                conn.setRequestProperty(&quot;Accept-Language&quot;, &quot;zh-CN&quot;);
+                conn.setRequestProperty(&quot;Referer&quot;, fileDownloader.getDownloadUrl());
+                conn.setRequestProperty(&quot;Charset&quot;, &quot;UTF-8&quot;);
+                conn.setRequestProperty(&quot;User-Agent&quot;, &quot;Mozilla/4.0 (compatible; MSIE 8.0; &quot; +
+                        &quot;Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; &quot; +
+                        &quot;.NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)&quot;);
+                conn.setRequestProperty(&quot;Connection&quot;, &quot;Keep-Alive&quot;);
+
+                conn.setRequestProperty(&quot;Range&quot;, &quot;bytes=&quot; + startPos + &quot;-&quot; + endPos);
+                conn.connect();
+
+                RandomAccessFile threadFile = new RandomAccessFile(
+                        fileDownloader.getFileSavePath() + File.separator +
+                                fileDownloader.getFilename(), &quot;rwd&quot;);
+                threadFile.seek(startPos);
+                InputStream inputStream = conn.getInputStream();
+                byte[] buffer = new byte[10240];
+                int offset;
+                downloadLength = downloadedSize;
+                while ((offset = inputStream.read(buffer, 0, 10240)) != -1) {
+                    threadFile.write(buffer, 0, offset);
+                    downloadLength += offset;
+                    fileDownloader.appendDownloadSize(offset);
+                }
+                threadFile.close();
+                inputStream.close();
+
+                isFinish = true;
+                isStart = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+                downloadLength = -1;
+            }
+        }
+    }
+
+    public int getDownloadLength() {
+        return downloadLength;
+    }
+
+    public int getThreadId() {
+        return threadId;
+    }
+
+    public boolean isFinish() {
+        return isFinish;
+    }
+
+    public boolean isStart() {
+        return isStart;
+    }
 }
 </code></pre>
 
-<p>这一段是动画的动效关键，首先要有一个随着时间推移而变化的值，当每次这个值变化的时候我们需要跟新界面让view重新绘制调用onDraw方法，我们不能手动调用onDraw方法，系统给我们提供的invalidate会强制view重绘进而调用onDraw方法。</p>
-<p>以上就是这个动画的全部关键原理了，下面我们来一份完整的源码：</p>
-<pre><code class="java">import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Path;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageView;
+<p>下载器：</p>
+<pre><code class="java">import android.content.Context;
+import android.util.SparseIntArray;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Date;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Created by lion on 2016/11/11.
- * &lt;p&gt;
- * RippleImageView use the {@link Path#addCircle} function
- * to draw the view when {@link RippleImageView#onDraw} called.
- * &lt;p&gt;
- * When you call {@link View#invalidate()} function,then the
- * {@link View#onDraw(Canvas)} will be called. In that way you
- * can use {@link Path#addCircle} to draw every frame, you will
- * see the ripple animation.
+ * Created by lion on 2017/2/7.
  */
 
-public class RippleImageView extends ImageView {
+public class FileDownloader {
 
-    // view center x
-    private int centerX = 0;
-    // view center y
-    private int centerY = 0;
-    // ripple animation current radius
-    private float radius = 0;
-    // the max radius that ripple animation need
-    private float maxRadius = 0;
-    // record the ripple animation is running
-    private boolean running = false;
+    public static final String TAG = &quot;FileDownloader&quot;;
 
-    private ObjectAnimator radiusAnimator;
-    private Path ripplePath;
+    /**
+     * http connection timeout
+     */
+    private static int CONNECTION_TIME_OUT = 10 * 1000;
 
-    public RippleImageView(Context context) {
-        super(context);
-        init();
+    private DownloadProgressManager downloadProgressManager;
+
+    private DownloadRunnable[] downloadThreads;
+
+    private String tagName = &quot;&quot;;
+
+    private String downloadUrl;
+    private String fileSavePath;
+    private String filename;
+    private int threadNum = 1;
+    private int fileSize = 0;
+    private int currentDownloadSize = 0;
+
+    private SparseIntArray currentDownloads;
+
+    public DownloadRunnable[] getDownloadThreads() {
+        return downloadThreads;
     }
 
-    public RippleImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+    public DownloadProgressManager getDownloadProgressManager() {
+        return downloadProgressManager;
     }
 
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
+    public int getFileSize() {
+        return fileSize;
     }
 
-    @TargetApi(21)
-    public RippleImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+    public String getFileSavePath() {
+        return fileSavePath;
     }
 
-    private void init() {
-        ripplePath = new Path();
+    public String getFilename() {
+        return filename;
+    }
 
-        // initial the animator, when animValue change,
-        // radiusAnimator will call {@link this#setAnimValue} method.
-        radiusAnimator = ObjectAnimator.ofFloat(this, &quot;animValue&quot;, 0, 1);
-        radiusAnimator.setDuration(1000);
-        radiusAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        radiusAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                running = true;
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public int getCurrentDownloadSize() {
+        return currentDownloadSize;
+    }
+
+    public int getThreadNum() {
+        return threadNum;
+    }
+
+    synchronized int appendDownloadSize(int size) {
+        currentDownloadSize += size;
+        return currentDownloadSize;
+    }
+
+    public FileDownloader(Context context) {
+        this.currentDownloads = new SparseIntArray();
+        this.downloadProgressManager = new DownloadProgressManager(context);
+    }
+
+    private void requestFileInfo(String downloadUrl) throws RuntimeException {
+        try {
+            HttpURLConnection connection = (HttpURLConnection)
+                    new URL(downloadUrl).openConnection();
+            connection.setConnectTimeout(CONNECTION_TIME_OUT);
+            connection.setRequestMethod(&quot;GET&quot;);
+
+            //set accept file meta-data type
+            connection.setRequestProperty(&quot;Accept&quot;, &quot;image/gif, image/jpeg, image/pjpeg,&quot; +
+                    &quot; image/pjpeg, application/x-shockwave-flash, application/xaml+xml, &quot; +
+                    &quot;application/vnd.ms-xpsdocument, application/x-ms-xbap, &quot; +
+                    &quot;application/x-ms-application, application/vnd.ms-excel, &quot; +
+                    &quot;application/vnd.ms-powerpoint, application/msword, */*&quot;);
+
+            connection.setRequestProperty(&quot;Accept-Language&quot;, &quot;zh-CN&quot;);
+            connection.setRequestProperty(&quot;Referer&quot;, downloadUrl);
+            connection.setRequestProperty(&quot;Charset&quot;, &quot;UTF-8&quot;);
+            connection.setRequestProperty(&quot;User-Agent&quot;, &quot;Mozilla/4.0 (compatible; MSIE 8.0; &quot; +
+                    &quot;Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; &quot; +
+                    &quot;.NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)&quot;);
+//            connection.setRequestProperty(&quot;Connection&quot;, &quot;Keep-Alive&quot;);
+
+            connection.connect();
+
+            if (connection.getResponseCode() == 200) {
+                fileSize = connection.getContentLength();
+                if (fileSize &lt;= 0) {
+                    throw new RuntimeException(TAG + &quot; Unknown file size&quot;);
+                }
+
+                filename = getFilename(connection);
+            } else {
+                throw new RuntimeException(TAG + &quot; Server Response Code is &quot;
+                        + connection.getResponseCode());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getFilename(HttpURLConnection connection) {
+        String filename = downloadUrl != null ?
+                downloadUrl.substring(downloadUrl.lastIndexOf(&quot;/&quot;) + 1) : null;
+        if (filename == null || &quot;&quot;.equals(filename.trim())) {//如果获取不到文件名称
+            for (int i = 0; ; i++) {
+                String mine = connection.getHeaderField(i);
+                if (mine == null) break;
+                if (&quot;content-disposition&quot;.equals(connection.getHeaderFieldKey(i).toLowerCase())) {
+                    Matcher m = Pattern.compile(&quot;.*filename=(.*)&quot;).
+                            matcher(mine.toLowerCase());
+                    if (m.find()) return m.group(1);
+                }
+            }
+            filename = UUID.randomUUID() + &quot;.tmp&quot;;//默认取一个文件名
+        }
+        return filename;
+    }
+
+    public void prepare(String downloadUrl, String fileSavePath, int threadNum) {
+        this.downloadUrl = downloadUrl;
+        this.fileSavePath = fileSavePath;
+        requestFileInfo(downloadUrl);
+        SparseIntArray progresses = downloadProgressManager.getProgress(downloadUrl);
+
+        if (threadNum &lt;= 0) {
+            threadNum = this.threadNum;
+        } else {
+            this.threadNum = threadNum;
+        }
+
+        if (progresses != null &amp;&amp; progresses.size() &gt; 0) {
+            threadNum = progresses.size();
+            for (int i = 0; i &lt; progresses.size(); i++) {
+                currentDownloadSize += progresses.get(i);
+            }
+        }
+
+        int block = fileSize % threadNum == 0 ?
+                fileSize / threadNum : fileSize / threadNum + 1;
+
+        downloadThreads = new DownloadRunnable[threadNum];
+
+        for (int i = 0; i &lt; threadNum; i++) {
+            downloadThreads[i] = new DownloadRunnable(this, i, block,
+                    progresses != null &amp;&amp; progresses.size() == threadNum ?
+                            progresses.valueAt(progresses.keyAt(i)) == -1 ? 0 :
+                                    progresses.valueAt(progresses.keyAt(i)) : 0);
+        }
+    }
+
+    public void start(OnDownloadListener listener) {
+        boolean isFinish = false;
+        int lastDownloadSize = 0;
+        int speed = 0;
+        Date current = new Date();
+        while (!isFinish) {
+            if (listener != null) {
+                int percent = (int) (currentDownloadSize / (float) fileSize * 100);
+                long time = new Date().getTime() - current.getTime();
+                speed = (int) ((currentDownloadSize - lastDownloadSize) / 1024f / time * 1000f);
+                listener.onUpdate(fileSize, currentDownloadSize, speed, percent);
+                if (percent == 100) {
+                    downloadProgressManager.finishDownload(downloadUrl);
+                    break;
+                }
+            }
+            current = new Date();
+            lastDownloadSize = currentDownloadSize;
+            updateProgress();
+            isFinish = checkFinish();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+//        System.out.println(tagName + &quot; DOWNLOAD FINISH&quot;);
+        if (listener != null) {
+            listener.onUpdate(fileSize, fileSize, 0, 100);
+        }
+    }
+
+    private boolean checkFinish() {
+        if (downloadThreads != null &amp;&amp; downloadThreads.length &gt; 0) {
+            for (DownloadRunnable downloadThread : downloadThreads) {
+                if (!downloadThread.isFinish()) {
+                    System.out.println(&quot;checkFinish false&quot;);
+                    return false;
+                }
             }
 
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                running = false;
+            return true;
+        }
+        System.out.println(&quot;checkFinish true&quot;);
+        return false;
+    }
+
+    public boolean isFinish() {
+        return checkFinish();
+    }
+
+    void updateProgress() {
+        for (DownloadRunnable downloadThread : downloadThreads) {
+            updateProgress(downloadThread.getThreadId(), downloadThread.getDownloadLength());
+        }
+    }
+
+    synchronized void updateProgress(int threadId, int downloaded) {
+        currentDownloads.put(threadId, downloaded);
+        downloadProgressManager.saveProgress(downloadUrl, currentDownloads);
+//        SparseIntArray progress = downloadProgressManager.getProgress(downloadUrl);
+//        for (int i = 0; i &lt; progress.size(); i++) {
+//            System.out.println(&quot;prepare progress = &quot; + progress.valueAt(progress.keyAt(i)));
+//        }
+    }
+
+    public boolean isStart() {
+        for (DownloadRunnable runnable : downloadThreads) {
+            if (runnable.isStart()) {
+                return true;
             }
+        }
 
-            @Override
-            public void onAnimationCancel(Animator animator) {
+        return false;
+    }
 
+    static int getConnectionTimeOut() {
+        return CONNECTION_TIME_OUT;
+    }
+
+    static void setConnectionTimeOut(int timeOut) {
+        CONNECTION_TIME_OUT = timeOut;
+    }
+
+    public interface OnDownloadListener {
+        void onUpdate(int totalSize, int currentSize, int speed, int percent);
+    }
+
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
+    }
+}
+</code></pre>
+
+<p>下载管理器：</p>
+<pre><code class="java">import android.content.Context;
+
+import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+/**
+ * Created by lion on 2017/2/8.
+ */
+
+public class DownloadManager {
+
+    private static int PARALLEL_DOWNLOAD_SIZE = 6;
+    private static DownloadManager instance;
+
+    private Context context;
+    private Executor downloadExecutor;
+    private ArrayList&lt;FileDownloader&gt; fileDownloaders;
+
+    public static DownloadManager getInstance(Context context) {
+        if (instance == null) {
+            instance = new DownloadManager(context);
+        }
+        return instance;
+    }
+
+    public DownloadManager(Context context) {
+        this.context = context;
+        downloadExecutor = Executors.newFixedThreadPool(PARALLEL_DOWNLOAD_SIZE);
+//        downloadExecutor = Executors.newCachedThreadPool();
+        fileDownloaders = new ArrayList&lt;&gt;();
+    }
+
+    public void download(String name, final String downloadUrl, final String fileSavePath, final int threadNum,
+                         final FileDownloader.OnDownloadListener listener) {
+        for (FileDownloader downloader : fileDownloaders) {
+            if (downloader.isFinish()) {
+                downloader.setTagName(name);
+                startDownload(downloader, downloadUrl, fileSavePath, threadNum, listener);
+                return;
             }
+        }
 
+        FileDownloader currentDownloader = new FileDownloader(context);
+        currentDownloader.setTagName(name);
+        fileDownloaders.add(currentDownloader);
+        startDownload(currentDownloader, downloadUrl, fileSavePath, threadNum, listener);
+    }
+
+    public void download(final String downloadUrl, final String fileSavePath, final int threadNum,
+                         final FileDownloader.OnDownloadListener listener) {
+        for (FileDownloader downloader : fileDownloaders) {
+            if (downloader.isFinish()) {
+                startDownload(downloader, downloadUrl, fileSavePath, threadNum, listener);
+                return;
+            }
+        }
+
+        FileDownloader currentDownloader = new FileDownloader(context);
+        fileDownloaders.add(currentDownloader);
+        startDownload(currentDownloader, downloadUrl, fileSavePath, threadNum, listener);
+    }
+
+    private synchronized void startDownload(final FileDownloader currentDownloader,
+                                            final String downloadUrl, final String fileSavePath,
+                                            final int threadNum,
+                                            final FileDownloader.OnDownloadListener listener) {
+        downloadExecutor.execute(new Runnable() {
             @Override
-            public void onAnimationRepeat(Animator animator) {
-
+            public void run() {
+                currentDownloader.prepare(downloadUrl, fileSavePath,
+                        threadNum);
+                if (currentDownloader.getDownloadThreads() != null) {
+                    for (DownloadRunnable runnable :
+                            currentDownloader.getDownloadThreads()) {
+                        downloadExecutor.execute(runnable);
+                    }
+                }
+                currentDownloader.start(listener);
             }
         });
     }
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        centerX = (right - left) / 2;
-        centerY = (bottom - top) / 2;
-        maxRadius = maxRadius(left, top, right, bottom);
+    public static void setConnectionTimeOut(int timeOut) {
+        FileDownloader.setConnectionTimeOut(timeOut);
     }
 
-    /**
-     * Calculate the max ripple animation radius.
-     *
-     * @param left   view left
-     * @param top    view top
-     * @param right  view right
-     * @param bottom view bottom
-     * @return
-     */
-    private float maxRadius(int left, int top, int right, int bottom) {
-        return (float) Math.sqrt(Math.pow(right - left, 2) + Math.pow(bottom - top, 2) / 2);
-    }
-
-    /**
-     * This method will be called by {@link this#radiusAnimator}
-     * reflection calls.
-     *
-     * @param value animation current value
-     */
-    public void setAnimValue(float value) {
-        this.radius = value * maxRadius;
-        System.out.println(&quot;radius = &quot; + this.radius);
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (running) {
-            // get canvas current state
-            final int state = canvas.save();
-            // add circle to path to crate ripple animation
-            // attention: you must reset the path first,
-            // otherwise the animation will run wrong way.
-            ripplePath.reset();
-            ripplePath.addCircle(centerX, centerY, radius, Path.Direction.CW);
-            canvas.clipPath(ripplePath);
-
-            // the {@link View#onDraw} method must be called before
-            // {@link Canvas#restoreToCount}, or the change will not appear.
-            super.onDraw(canvas);
-            canvas.restoreToCount(state);
-            return;
-        }
-
-        // in a normal condition, you should call the
-        // super.onDraw the draw the normal situation.
-        super.onDraw(canvas);
-    }
-
-    /**
-     * call the {@link Animator#start()} function to start the animation.
-     */
-    public void startAnimation() {
-        if (radiusAnimator.isRunning()) {
-            radiusAnimator.cancel();
-        }
-
-        radiusAnimator.start();
+    public static void setParallelDownloadSize(int size) {
+        PARALLEL_DOWNLOAD_SIZE = size;
     }
 }
-
 </code></pre></article></body></html>
