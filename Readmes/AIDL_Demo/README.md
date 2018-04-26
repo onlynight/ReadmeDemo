@@ -1,7 +1,7 @@
 AIDL使用以及IPC原理分析（进程间通信）
 ==============================
 
-#**概要**
+# **概要**
 
 为了大家能够更好的理解android的进程间通信原理，以下将会从以下几个方面讲解跨进程通讯信：<br>
 1. 必要了解的概念<br>
@@ -11,24 +11,24 @@ AIDL使用以及IPC原理分析（进程间通信）
 5. 不使用aidl，手动编写Binder实现进程间通信<br>
 6. 分析aidl的原理，梳理andriod进程间通信相关知识<br>
 
-#1.必要了解的概念
-#####a.IPC
+# 1.必要了解的概念
+##### a.IPC
 IPC是Inner-Process Communication，就是进程间通信。
-#####b.AIDL 
+##### b.AIDL 
 AUDL是Android Interface Define Language 安卓接口语言缩写。
-#####c.Binder
+##### c.Binder
 Binder是android中负责进程间通信的驱动类，Binder内部设计十分复杂这里我们暂不做深入研究，这里我们只需要了解它是负责进程间通信的类即可。
-#####d.Proxy代理模式
+##### d.Proxy代理模式
 如果你不是很了解代理模式，可以去这里看看。
 [Proxy Pattern https://github.com/onlynight/Proxy]
 
 
-#2.WHY？
+# 2.WHY？
 a. 某些情况下远端的服务更适合运算或者更适合执行耗时操作，这时候我们会使用aidl请求远程服务；
 b. android对单个应用的内存限制，当有需求需要突破这个限制的时候我们需要另启进程扩大内存。<br>
 实际使用情况还有很多，笔者遇到的情况还不是很多这里就不意义列举了，反正aidl是一种很有效的IPC通信方式。
 
-#3.可能遇到的问题
+# 3.可能遇到的问题
 我们都知道在android中一个应用就对应一个linux进程，或者说默认情况下所有的组件都是在同一个进程下的；我们也可以将不同的组件放在不同的进程中，详情请查看我的另外一篇文章[Multi Process Component https://github.com/onlynight/MultiProcessComponent]，这样应用就不止一个进程了，按照一个进程对应一个虚拟机，也就是说我们应用不止一个虚拟机了。可能出现的问题我们来举个栗子：
 
 假设你的代码里有一个单例，DemoSingletion；虚拟机1启动时创建了这个单例，你在虚拟机中任何一个线程中使用都只有它一个对象，线程同步问题可以添加线程锁解决。那么问题来了，虚拟机2启动的时候还会再创建这个单例吗？如果不创建的话和虚拟机1使用的是同一个单例吗？
@@ -38,19 +38,19 @@ b. android对单个应用的内存限制，当有需求需要突破这个限制�
 1. 单例模式完全失效
 2. 静态变量无法同步
 
-#4.AIDL的使用
+# 4.AIDL的使用
 注：由于基于eclipse的adt过于老旧这里不再讲解操作，请使用android studio完成以下操作。
 
 ## **·** 使用AIDL文件
 
-###a.新建aidl文件
+### a.新建aidl文件
 在你想要创建aidl的包下新建aidl文件（这里我们命名为IDataManager），aidl文件的语法与java类似，默认生成的aidl会有一个demo方法
 
 ```java
 void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,double aDouble, String aString);
 ```
 系统生成的```basicTypes```这个demo方法告诉我们能够传递那些类型的数据。
-###b.添加自定义方法
+### b.添加自定义方法
 
 ```java
 // 无论应用的类是否和aidl文件在同一包下，都需要显示import
@@ -118,11 +118,11 @@ public class Data implements Parcelable {
 }
 ```
 
-###c. 编译aidl文件
+### c. 编译aidl文件
 到这里aidl的编写就完成了，我们build下工程，编译器会自动生成IDataManager.java文件。
 该文件在工程的```~/app/build/generated/source/aidl/debug/<package>/IDataManager.java```，这里我们先不讲解生成的这个类，先看下如何使用aidl。
 	
-###d. 添加Service类（远端服务）
+### d. 添加Service类（远端服务）
 添加一个```Service```命名为```DataManagerService```我们在```DataManagerService```中实现一个静态的```IDataManager.Stub```的类
 
 ```java
@@ -160,7 +160,7 @@ public IBinder onBind(Intent intent) {
 }
 ```
 
-###e.绑定服务并测试夸进程通信
+### e.绑定服务并测试夸进程通信
 在你需要调用的Activity中添加如下代码：
 
 ```java
@@ -224,12 +224,12 @@ public void callService(View view) {
     }
 }
 ```
-###f.运行查看结果
+### f.运行查看结果
 
 ## **·**自己实现Binder
 上面我们展示了如何使用AIDL文件实现进程间通信，为了能够更好的理解进程间通信机制接下来将会展示如何手动编写一个Binder实现IPC。
 
-###aidl生成类分析
+### aidl生成类分析
 将Android Studio切换到项目视图，找到如下文件：
 ![Android Studio aidl 自动生成类](./images/aidl_interface_screenshot.png)
 我们将这个接口文件简化以下，看看系统多给我们做了些什么。
@@ -247,20 +247,20 @@ public interface IDataManager extends android.os.IInterface {
 }
 ```
 
-####```IDataManager```
+#### ```IDataManager```
 这个是我们定义的aidl接口，这个接口里面就要定义我们需要的要成服务能力的接口;
 
-####```IDataManager.Stub```
+#### ```IDataManager.Stub```
 这个是一个继承自Binder并且实现了IDataManager的抽象类；
 
-####```IDataManager.Stub.Proxy```
+#### ```IDataManager.Stub.Proxy```
 这个是一个私有内部类，实现了IDataManager;
 
 我们知道Binder是Android中的IPC通信驱动，从类结构我们就可以看出最终的实际功能类是```IDataManager.Stub.Proxy```。具体的类方法我们暂时不做分析，接下来我们不使用aidl文件自己实现一个Binder驱动类，写的过程中我们细细来分析各个函数的功能。
 
-##5.自己实现Binder驱动IPC通信
+## 5.自己实现Binder驱动IPC通信
 
-####定义公共接口
+#### 定义公共接口
 从上面aidl生成的类我们看出需要实现IPC通信需要实现IInterface接口，并且继承Binder类从中间驱动。所以首先我们先定义公共接口继承IInterface接口。
 
 ```java
@@ -477,22 +477,22 @@ public abstract class DataManagerNative extends Binder implements IDataManager2 
 }
 ```
 
-####```DataManagerNative.DESCRIPTER```
+#### ```DataManagerNative.DESCRIPTER```
 Binder描述符，唯一标识符，服务端和客户端都可以通过该ID定位到Binder实例。
 
-####```DataManagerNative.TRANSACTION_XXX```
+#### ```DataManagerNative.TRANSACTION_XXX```
 自定义的IInterface方法的唯一标识符。
 
-####```DataManagerNative.asInterface```
+#### ```DataManagerNative.asInterface```
 将Binder转换为IInterface就可以直接调用我们自己定义的方法啦。
 
-####```DataManagerNative.onTransact```
+#### ```DataManagerNative.onTransact```
 根据不同的```TRANSACTION_ID```调用调用不同的方法。
 
-####```DataManagerNative.Proxy```
+#### ```DataManagerNative.Proxy```
 代理远端Binder，对外提供```IDataManager2```的功能。
 
-####```DataManagerNative.Proxy.transact```
+#### ```DataManagerNative.Proxy.transact```
 想调用远端Binder的transact方法。
 
 可以看到```DataManagerNative```是个抽象类，并没有实现```IDataManager2```中的方法。所以我们需要在实例化这个类的时候实现这些方法，这些操作都放到Service中去完成。
@@ -553,7 +553,7 @@ public class DataManagerService extends Service {
 
 实际上我们自己修改过的类和编译器自动生成的类基本上是一样的，这里为了让大家有更加深刻的认识，我们将其手动实现一次。
 
-#6.AIDL原理分析
+# 6.AIDL原理分析
 
 相信经过以上的分析大家应该有个大概的认识了，但是要动起手来应该会有很多地方卡住，接下来我们来个全面的分析，理清楚Binder的机制。
 
@@ -566,7 +566,7 @@ public class DataManagerService extends Service {
 我们能看到的源码执行顺序就是这样的，由于Binder内部结构很复杂，Binder内部的如何进行数据交换如何定位服务端方法我们这里不再介绍，感兴趣的朋友可以查看Android源码。
 
 有几个比较有趣的地方我们单独拿出来说说。
-####首先是```transact```方法
+#### 首先是```transact```方法
 
 ```java
 public int getDataCount() throws RemoteException {

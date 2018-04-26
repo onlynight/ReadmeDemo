@@ -17,7 +17,7 @@ Android源码数量相当多我们不能从头逐一查看所有文件中的源�
 
 #需要了解的几个类
 开始之前你需要对几个类有所了解知道他们的职责这样有助于理解源码：
-###1.Activity
+### 1.Activity
 An activity is a single, focused thing that the user can do.  Almost all
 activities interact with the user, so the Activity class takes care of
 creating a window for you in which you can place your UI with
@@ -28,7 +28,7 @@ or embedded inside of another activity (using {@link ActivityGroup}).
 
 Activity是我们日常中最常用的组件，它通常显示给用户的是一个全屏的窗口，或者一个浮动的窗口（例如音乐播放器的浮动歌词），或者嵌入其他的Activity使用ActivityGroup。它Android四大组件中唯一能和用户交互的组件，这里就不再多做解释了。
 
-###2.Instrumentation
+### 2.Instrumentation
 Base class for implementing application instrumentation code.  When running
 with instrumentation turned on, this class will be instantiated for you
 before any of the application code, allowing you to monitor all of the
@@ -39,7 +39,7 @@ instrumentation tag.
 当Instrumentation打开的时候，在你的应用代码执行之前会首先实例化一个instrumentation，你可以监听所有系统应用交互。
 用于执行具体操作的类，辅助Activity的监控和测试。
 
-###3.ActivityManagerNative、ActivityManagerProxy、IActivityManager、ActivityManagerService
+### 3.ActivityManagerNative、ActivityManagerProxy、IActivityManager、ActivityManagerService
 IPC需要的类，了解过aidl的童鞋应该都不陌生。需要有一个继承```IInterface```的接口定义ipc的能力接口，需要有个继承```Binder```类的驱动类，还需要有一个远程服务的代理类```Proxy```代理远程服务的操作，实现```Binder```的类可能是个抽象类，还需要有类实例化这个```Binder```或者继承它实现所有抽象方法。
 
 1. ```IActivityManager```就是继承了```IInterface```的能力接口。

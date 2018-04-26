@@ -1,11 +1,11 @@
 Android滑动冲突解决方法
 ======================
 
-#滑动冲突
+# 滑动冲突
 
 首先讲解一下什么是滑动冲突。当你需要在一个ScrollView中嵌套使用ListView或者RecyclerView的时候你会发现只有ScrollView能够滑动，而ListView或RecyclerView不能滑动，这个就违背了我们写这段代码的意愿。我们想要的结果是当我们滑动ListView的时候ListView滑动，滑动ListView以外的地方的时候ScrollView滑动。这时候滑动冲突就产生了，我们需要想办法解决这个冲突。
 
-#View Touch事件分发
+# View Touch事件分发
 
 首先我们了解下Android的控件组织结构。View是显示组件的基类，ViewGroup继承自View是布局的基类。ViewGroup中可包含View和ViewGroup，这样就形成了View树。View的Touch事件总是从View根节点开始向下传递的，根据点击的位置判断该传递给哪个子View，直到子节点再没有子节点这时候，如果这个事件被该View消耗那么事件的传递就此结束，如果该View没有使用这个事件那么这个事件会依次向上传递直到有View消耗了这个事件，如果没有View消耗这个事件，那么该事件就会被传递给Activity处理。以上就是Vieww Touch事件传递的过程。
 
@@ -117,7 +117,7 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
 
 通过上面的分发的逻辑我们可以知道父控件有能力把事件不传递给子View，从而不让子控件接收Touch事件，那么子控件有没有能力让父控件失去响应Touch事件的能力呢，下面我们来看看具体的源码，看源码的顺序是由下而上的，这回我们反其道而行，我们知道事件的入口然后依次向下找。
 
-#Activity分发事件到ViewGroup
+# Activity分发事件到ViewGroup
 根据上面的图我们知道View的touch事件是由Activity传递过来的，那么我们先看看Activity有没有类似的方法，正如我们所料，Activity的dispatchTouchEvent函数如下：
 
 ```java
@@ -263,7 +263,7 @@ DecorView#superDispatchTouchEvent -> ViewGroup#dispatchTouchEvent -> View#dispat
 
 
 
-#解决滑动冲突的原理
+# 解决滑动冲突的原理
 
 看了上面的源码解析，我们知道Viewtouch事件分发过程中重要的三个函数：
 
@@ -336,9 +336,9 @@ public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 
 实际上requestDisallowInterceptTouchEvent是修改了disallowIntercept的状态，再结合ViewGroup的dispatchTouchEvent方法查看，我们就明白这个方法的最终意义。ViewGroup的子元素可以通过调用这个方法禁止ViewGroup拦截touch事件。到这里我们就找到了自下而上的touch事件的拦截方法。
 
-#滑动冲突两种解决办法
+# 滑动冲突两种解决办法
 
-##1. 外部拦截法
+## 1. 外部拦截法
 
 通过上面的原理分析我们知道我们可以在dispatchTouchEvent的时候不分发事件或者onInterceptTouchEvent时候拦截事件，实际上onInterceptTouchEvent方法是一个空方法，是android专门提供给我们处理touch事件拦截的方法，所以这里我们在onInterceptTouchEvent方法中拦截touch事件。
 
@@ -355,7 +355,7 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 
 这里的condition将会再下一章节中具体讲解。
 
-##2. 内部拦截法
+## 2. 内部拦截法
 
 首先，我们让父控件拦截除了ACTION_DOWN以外的所有事件，如果连ACTION_DOWN都拦截那么子控件将无法收到任何touch事件：
 
@@ -401,7 +401,7 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 这样，就可以解决touch事件的冲突问题，从控件本身解决。内部拦截法使用起来稍显复杂，需要修改两个控件，一般情况下我们都通过外部拦截法解决滑动冲突，如果有特殊情况需要使用内部拦截法才会使用内部拦截法。
 
-#事件拦截Condition
+# 事件拦截Condition
 
 试想以下情况：
 
@@ -510,6 +510,6 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 }
 ```
 
-#滑动冲突解决拓展
+# 滑动冲突解决拓展
 
 滑动冲突的解决方法我们已经知道了，以后无论遇到多么复杂的情况解决滑动冲突的原则都是不变的，根据你的业务需求进行不同的事件拦截即可。

@@ -3,35 +3,35 @@
 
 我们常用的布局有LinearLayout，FrameLayout，RelativeLayout，大多数情况下都能满足我们的需求，但是也有很多情况下这些布局不能满足我们的需求，无论我们怎么嵌套布局都没法实现我们想要的效果，这时候我们就需要用到自定义布局啦。如果你正准备学习自定义布局，或者你想彻底了解自定义布局的一般步骤，那么这篇文章一定很适合你。
 
-#预览
+# 预览
 
 ![TagLayout预览图](./images/taglayout.gif)
 
 我已经将它做成了gradle的依赖，你可以方便的引入android studio使用。
 https://github.com/onlynight/TagLayout
 
-#概述
+# 概述
 
 一般的，我们自定义布局的原则就是继承现有的布局，这样可以少写很多不必要的代码，但是现有的布局如果不能满足需求我们就要继承ViewGroup实现其中的所有流程了。下面我们先说明几个概念：
 
-##1. ViewGroup和View的关系与区别
+## 1. ViewGroup和View的关系与区别
 
 ViewGroup继承自View但是它的和View的侧重点不同，View侧重的是onDraw绘制的内容，而ViewGroup侧重的是对其内部的子view的layout，也就是布局过程（onLayout）。当然ViewGroup同样也可以重写onDraw函数在其中绘制内容，但是一般的我们不会这么做，绘制特殊的图形一般采用自定义View而不是自定义ViewGroup。
 
-##2. ViewGroup、View、LayoutParams的关系
+## 2. ViewGroup、View、LayoutParams的关系
 
 - ViewGroup继承自View，所以ViewGroup实质上也是View
 - ViewGroup中可以包含多个View或者ViewGroup，从逻辑上来说他们ViewGroup和View共同构成了视图树，ViewGroup是父节点，View是子节点。View中不能包含View。
 - 有了布局就多出了一个概念，就是View在ViewGroup中的位置，andorid中为这个位置信息添加了个对象叫做LayoutParams。LayoutParams描述了ViewGroup中的子控件View的大小等属性。
 - LayoutParams针对不同的布局类型又有不同的子类，例如LinearLayout.LayoutParams中除了描述View的大小外还有一个weight属性，layout_weight相信大家都用过啦这里就不再赘述。自定义的ViewGroup如果需要ViewGroup.LayoutParams以外的属性，你需要重新构造一个你需要的布局参数，这个ViewGroup中所有的View都被设置上这个类型的布局参数。
 
-##3. 自定义ViewGroup的一般步骤
+## 3. 自定义ViewGroup的一般步骤
 
 1. onMeasure中测量自己以及子控件View的尺寸。
 2. onLayout中设置子控件View的位置。
 3. onDraw 如果又需要你可以在onDraw中绘制内容，但是自己布局我们一般都不会用到这个步骤。
 
-##4. MeasureSpec
+## 4. MeasureSpec
 
 MeasureSpec是android中一个特殊的值，我们看到onMeasure的参数即是MeasureSpec：
 
@@ -783,7 +783,7 @@ public class TagLayout extends ViewGroup {
 
 以上就是布局的全部过程啦，这里我们自定义TagLayout就全部完成了下面来归纳下自定义ViewGroup的一般步骤。
 
-#自定义ViewGroup的一般步骤
+# 自定义ViewGroup的一般步骤
 
 ## 1. 首先确定ViewGroup的子控件的来源
 

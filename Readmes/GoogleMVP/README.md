@@ -1,7 +1,7 @@
 Google Android Architecture --- MVP
 ===================================
 
-#目标
+# 目标
 
 >The Android framework offers a lot of flexibility when it comes to defining how to organize and architect an Android app. This freedom, whilst very valuable, can also result in apps with large classes, inconsistent naming and architectures (or lack of) that can make testing, maintaining and extending difficult.
 
@@ -11,10 +11,10 @@ Google Android Architecture --- MVP
 
 待中文大概解释。
 
-#todo-mvp
-##概述
-##包结构分析
-##类结构分析
-##总结
+# todo-mvp
+## 概述
+## 包结构分析
+## 类结构分析
+## 总结
 
-#todo-
+# todo-

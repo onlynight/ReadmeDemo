@@ -1,10 +1,10 @@
 自定义RulerView
 ==============
 
-#概述
+# 概述
 本文主要讲如何继承View实现一个自定义View，然后通过实例RulerView的实现逻辑帮助读者更好的理解自定义View的设计与实现。开讲之前先给博客大神打个广告《Android开发艺术探索》的作者任玉刚的这本书会给想要进阶学习的一个好的开始，带你入门带你飞。
 
-#功能描述
+# 功能描述
 RulerView的具体功能如下：
 
 1. 首先要绘制一把尺子带大小刻度的，这样看起来才像尺子。
@@ -32,7 +32,7 @@ RulerView的具体功能如下：
 
 #设计与实现
 
-##设计思路
+## 设计思路
 这样一个不规则的图形用常规的布局加控件的方式很难实现，这时候自定义控件就排上用场了。自定义控件分为自定义View和自定义ViewGroup两种，ViewGroup侧重的是自定义布局，View侧重的是自定义绘制，显然这里我们使用的是自定义View。
 
 再来我们说一下尺子绘制的思路，第一种是一张png位图，通过在view上绘制位图的方法讲尺子绘制到控件上，但是经过多种尝试这种方式被放弃，原因是旋转尺子的时候通过尺子的两个端点计算尺子偏差的角度老是出现问题，故没有采用这种方式；第二种是通过绘制直线最终拼接成一把尺子，这种实现计算坐标稍复杂，但是经过实践证明这种实现方法比较靠谱，并且可移植性较强，写了一套代码逻辑即可移植到android和ios两个平台。下面来具体讲一下第二种方式的设计思想和实现。
@@ -42,9 +42,9 @@ RulerView的具体功能如下：
 3. 复写onTouchEvent函数处理其中的事件使得两个基准点能够跟着用户的手指移动，这样尺子的基本功能就完成啦。
 4. 当然其中还有一些坑，在实现的过程中会详细说明。
 
-##实现与源码分析
+## 实现与源码分析
 
-###添加自定义View
+### 添加自定义View
 新建RulerSurfaceView类继承自SurfaceView，这里我们使用SurfaceView而不是普通的View是因为由于绘制内容较多且绘制的内容多为动态绘制需要实时刷新，为了保证良好的用户体验所有绘制过程不能放在主线程中。SurfaceView的绘制过程是独立在主线程之外的，所以即便是做大量的绘制工作也不会导致主线程卡顿。除此之外还要实现一个Runnable接口，我们所有的绘制操作都将在这个Runnable中完成。你还需要实现一个SurfaceCallback接口，我们会把SurfaceView的回调设置在这个View上。简要代码如下：
 
 ```java
@@ -91,7 +91,7 @@ public class RulerSurfaceView extends SurfaceView implements
 }
 ```
 
-###SurfaceView的使用
+### SurfaceView的使用
 既然用到了SurfaceView，这里就说一下SurfaceView的基本用法。SurfaceView继承自View但是又和普通的View有所不同，它的绘制过程不是在主线程中进行的，需要我们令启线程完成绘制，这里就会涉及到线程同步以及更新UI线程的问题，不过SurfaceView都为我们完成了这些工作，我们只需要关心我们关心的事情就好了，要使用SurfaceView你需要做如下操作：
 
 ```java
@@ -166,7 +166,7 @@ public void run() {
 3. surfaceCreated的时候启动绘制线程。
 4. surfaceDestoryed的时候停止绘制线程。
 
-###为RulerSurfaceView添加自定义属性
+### 为RulerSurfaceView添加自定义属性
 为了方便使用这里我们给RulerSurfaceView添加几个自定义属性，在values文件夹中新建```attrs.xml```资源文件添加如下代码：
 
 ```xml
@@ -285,7 +285,7 @@ private void init(TypedArray typedArray) {
 
 我们看到最外层的```RelativeLayout```中的这行代码```xmlns:app="http://schemas.android.com/apk/res-auto"```当你使用自定义属性的时候只需要引入这个就可以了```xmlns:app```这个namespace可以自定义名称。引入这个namespace以后你就可以像使用android系统定义的属性一样使用自定义属性了。
 
-###标尺坐标计算
+### 标尺坐标计算
 前面讲了一大堆的基础知识，下面来说一下尺子的坐标计算。文章开头我们已经讲过了基本思路，我们这里来说一下具体实现。
 
 ![计算坐标图](./images/calc_sketch.png)
@@ -461,7 +461,7 @@ if (btn1.y - btn2.y == 0) {
 
 这里还有一点需要注意，使用的坐标点为自定义的类而没有使用android的point类是为了方便移植。
 
-###绘制图形
+### 绘制图形
 讲上一步中计算的左边绘制到view上，这里我们都是直线直接调用Canvas#drawLine函数即可，现在就可以看到一把静态的标尺出现啦。
 
 ```java
@@ -480,7 +480,7 @@ if (points != null && points.size() == 4) {
 }
 ```
 
-###移动尺子
+### 移动尺子
 接下来我们要处理下控件中的点击事件让我们定义的基准点能够跟随手指移动已达到移动尺子的目的。前面我们说了要支持两个点同时移动的功能，就是说要支持多点触控，所以不能简单的处理touch事件了，下面我们详细分析下：
 
 - ```MotionEventCompat#getPointerCount```获取当前点击屏幕上点的数量

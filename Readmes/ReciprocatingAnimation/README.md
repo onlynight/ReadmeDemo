@@ -3,22 +3,22 @@ Android自定义水波纹动画View
 
 源码是双11的时候就写好了，但是我觉得当天发不太好，所以推迟了几天，没想到过了双11女友就变成了前女友，桑心。唉不说了，来看看代码吧。
 
-#展示效果
+# 展示效果
 
-##Hi前辈
+## Hi前辈
 话不多说，我们先来看看效果：
 
 ![Hi前辈搜索预览](./images/hiqianbei_demo.gif)
 
 这一张是《Hi前辈》的搜索预览图，你可以在这里下载这个APP查看更多效果：http://www.wandoujia.com/apps/com.superlity.hiqianbei
 
-##LSearchView
+## LSearchView
 
 ![LSearchView](./images/lsearchview_demo.gif)
 
 这是一个MD风格的搜索框，集成了ripple动画以及search时的loading，使用很简单，如果你也需要这样的搜索控件不妨来试试：https://github.com/onlynight/LSearchView
 
-##RippleEverywhere
+## RippleEverywhere
 
 女友的照片：
 
@@ -30,14 +30,14 @@ Android自定义水波纹动画View
 
 这是一个水波纹动画支持库，由于使用暂时只支持Android4.0以上版本。https://github.com/onlynight/RippleEverywhere
 
-#实现原理
+# 实现原理
 使用属性动画完成该动画的实现，由于android2.3以下已经不是主流机型，故只兼容4.0以上系统。
 
 关于属性动画，如果还有童鞋不了解可以去看看hongyang大神的这篇文章：http://blog.csdn.net/lmj623565791/article/details/38067475。
 
 >在我看来属性动画实际上就类似于定时器，所谓定时器就是独立在主线程之外的另外一个用于计时的线程，每当到达你设定时间的时候这个线程就会通知你；属性动画也不光是另外一个线程，他能够操作主线程UI元素属性就说明了它内部已经做了线程同步。
 
-##基本原理
+## 基本原理
 
 我们先来看下关键代码：
 
