@@ -557,7 +557,7 @@ public class DataManagerService extends Service {
 
 相信经过以上的分析大家应该有个大概的认识了，但是要动起手来应该会有很多地方卡住，接下来我们来个全面的分析，理清楚Binder的机制。
 
-## **·**运行原理图
+## 运行原理图
 首先我们先来看下原理图，让大家有个感性的认识：
 ![Binder原理图](./images/Binder_principle.png)
 
