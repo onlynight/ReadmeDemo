@@ -363,6 +363,10 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
 我们再看 ```prepare()``` 函数中做了判断，如果 ```sThreadLocal``` 有值则直接抛出异常，这里限制一个线程只能有一个 ```Looper``` 。
 
+下面是我纯 Java 环境下实现的模拟 Handler 简单原理：
+
+[模拟Handler实现](https://github.com/onlynight/SimulateHandler)
+
 相关文章：
 
 [Handler是如何实现线程之间的切换的](https://blog.csdn.net/c6E5UlI1N/article/details/79724023)
@@ -442,7 +446,11 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
 ### 5. 事件总线框架
 
+#### EventBus
+
 ### 6. 日志框架
+
+#### Logger
 
 ### 7. 性能优化框架
 
