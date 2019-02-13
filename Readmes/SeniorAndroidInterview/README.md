@@ -207,6 +207,166 @@ public abstract class IntentService extends Service {
 2. 生存期，静态广播的生存期可以比动态广播的长很多，因为静态广播很多都是用来对系统时间进行监听，比如我们可以监听手机开机。而动态广播会随着context的终止而终止
 3. 动态广播无需在AndroidManifest.xml中声明即可直接使用，也即动态；而静态广播则需要，有时候还要在AndroidManifest.xml中加上一些权限的声明
 
+### 4. android 消息机制
+
+图就不画了，博客上找了几张，上图：
+
+![](./images/handler_structure.png)
+
+上面这张图说明了Handler中的消息循环机制：
+
+1. Handler 消息处理器
+2. Looper 消息泵，在消息队列中循环读取消息
+3. MesageQueue 消息队列，存放消息
+4. Message 消息体
+
+老生常谈了，Handler 通过 sendMessage 向消息队列中发送消息，Looper 循环从 MessageQueue 中取出消息，然后要求 Handler dispatchMessage ，最后回调到 handleMessage 中。从结构上来看简单的就是这么描述。
+
+![](./images/handler_switch_thread.png)
+
+上图中很明确的说明了，Looper是属于某个一线程的，在android中我们知道要在某个线程中创建 Handler 首先需要初始化 Looper，否则就会报错。下面我们说几条结论，稍后通过源码证明：
+
+1. 一个线程只能有且仅有一个Looper
+2. 在线程中创建 Handler 前需要先初始化 Looper
+
+```java
+// ActivityThread.java
+
+public static void main(String[] args) {
+    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "ActivityThreadMain");
+
+    // CloseGuard defaults to true and can be quite spammy.  We
+    // disable it here, but selectively enable it later (via
+    // StrictMode) on debug builds, but using DropBox, not logs.
+    CloseGuard.setEnabled(false);
+
+    Environment.initForCurrentUser();
+
+    // Set the reporter for event logging in libcore
+    EventLogger.setReporter(new EventLoggingReporter());
+
+    // Make sure TrustedCertificateStore looks in the right place for CA certificates
+    final File configDir = Environment.getUserConfigDirectory(UserHandle.myUserId());
+    TrustedCertificateStore.setDefaultUserDirectory(configDir);
+
+    Process.setArgV0("<pre-initialized>");
+
+    Looper.prepareMainLooper();
+
+    // Find the value for {@link #PROC_START_SEQ_IDENT} if provided on the command line.
+    // It will be in the format "seq=114"
+    long startSeq = 0;
+    if (args != null) {
+        for (int i = args.length - 1; i >= 0; --i) {
+            if (args[i] != null && args[i].startsWith(PROC_START_SEQ_IDENT)) {
+                startSeq = Long.parseLong(
+                        args[i].substring(PROC_START_SEQ_IDENT.length()));
+            }
+        }
+    }
+    ActivityThread thread = new ActivityThread();
+    thread.attach(false, startSeq);
+
+    if (sMainThreadHandler == null) {
+        sMainThreadHandler = thread.getHandler();
+    }
+
+    if (false) {
+        Looper.myLooper().setMessageLogging(new
+                LogPrinter(Log.DEBUG, "ActivityThread"));
+    }
+
+    // End of event ActivityThreadMain.
+    Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+    Looper.loop();
+
+    throw new RuntimeException("Main thread loop unexpectedly exited");
+}
+```
+
+主线程中我们未做 Looper 初始化是因为在 main 函数中系统已经帮我们做了初始化；
+
+
+通常情况下我们是这样创建 Handler 的：
+
+```java
+new Handler();
+```
+
+构造函数中没有参数，我们看下最终的构造函数如下：
+
+```java
+// Handler.java
+
+public Handler(Callback callback, boolean async) {
+    if (FIND_POTENTIAL_LEAKS) {
+        final Class<? extends Handler> klass = getClass();
+        if ((klass.isAnonymousClass() || klass.isMemberClass() || klass.isLocalClass()) &&
+                (klass.getModifiers() & Modifier.STATIC) == 0) {
+            Log.w(TAG, "The following Handler class should be static or leaks might occur: " +
+                klass.getCanonicalName());
+        }
+    }
+
+    mLooper = Looper.myLooper();
+    if (mLooper == null) {
+        throw new RuntimeException(
+            "Can't create handler inside thread " + Thread.currentThread()
+                    + " that has not called Looper.prepare()");
+    }
+    mQueue = mLooper.mQueue;
+    mCallback = callback;
+    mAsynchronous = async;
+}
+```
+
+可以看到 mLooper 是通过 Looper.myLooper(); 获得的，继续往下看：
+
+
+```java
+// Looper.java
+
+public final class Looper {
+
+    // sThreadLocal.get() will return null unless you've called prepare().
+    static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>();
+
+    public static void prepare() {
+        prepare(true);
+    }
+
+    private static void prepare(boolean quitAllowed) {
+        if (sThreadLocal.get() != null) {
+            throw new RuntimeException("Only one Looper may be created per thread");
+        }
+        sThreadLocal.set(new Looper(quitAllowed));
+    }
+
+    public static @Nullable Looper myLooper() {
+        return sThreadLocal.get();
+    }
+
+    /**
+     * Run the message queue in this thread. Be sure to call
+     * {@link #quit()} to end the loop.
+     */
+    public static void loop() {
+        final Looper me = myLooper();
+        ...
+    }
+}
+```
+
+myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
+
+**```ThreadLocal``` 是用于保存线程共享变量的类，对它进行 set 时候各个线程的变量不会相互影响，```Thread.ThreadLocalMap``` 会给每个线程保存一个线程共享变量。 ```ThreadLocal``` 是切换线程的关键，```ThreadLocal``` 中保存的是当前线程的 ```Looper``` ，```Looper``` 中包含一个线程的消息队列 ```MessageQueue``` ， ```MessageQueue``` 中的 ```Message``` 中又持有 Hanmdler 的引用，当 ```Looper``` 取到 ```Message``` 后，可通过 ```Message``` 关联的 ```Handler``` 直接调用相关函数，由于是 ```Looper``` 调用的 ```Handler``` ，这时候操作 ```Handler``` 的线程就是 ```Looper``` 所在的线程了，这样就做到了线程切换。**
+
+我们再看 ```prepare()``` 函数中做了判断，如果 ```sThreadLocal``` 有值则直接抛出异常，这里限制一个线程只能有一个 ```Looper``` 。
+
+相关文章：
+
+[Handler是如何实现线程之间的切换的](https://blog.csdn.net/c6E5UlI1N/article/details/79724023)
+
 ## 二、 Java 基础
 
 ### 1. 重载和重写
@@ -250,11 +410,102 @@ public abstract class IntentService extends Service {
 
 ### 1. 网络框架
 
+#### OkHttp
+
+#### Retrofit
+
 ### 2. 图片加载框架
+
+#### Glide
+
+#### Fresco
+
+#### Picasso
 
 ### 3. 数据库 ORM 框架
 
+#### GreenDao
+
+#### LitePal
+
+#### OrmDao
+
+#### Realm
+
+### 4. 依赖注入框架
+
+#### ButterKnife
+
+#### Dagger2
+
+#### AndroidAnnotations
+
+### 5. 事件总线框架
+
+### 6. 日志框架
+
+### 7. 性能优化框架
+
+#### LeakCanary
+
+#### ACRA
+
+### 8. 响应式变成框架
+
+#### RxJava
+
+### 9. 其他框架
+
+#### DiskLruCache
+
+#### Mockito
+
 ## 四、 Android 进阶
+
+### 1. 多进程
+
+在没有特殊申明的情况下我们应用的所有组件都是在同一个进程下的，只有我们特殊申明应用才能开启多进程。
+
+多进程的好处：
+
+1. 当应用需要很多内存时，我们可以通过添加一个进程来解除系统对应用内存的限制。(慎用，进程的开销远比线程大得多，进程越多占用的内存也就越多，可用的内存就会更少，当系统需要大内存分配的时候就会频繁出现内存回收的情况，内存回收期间总会有一个瞬间所有应用线程暂停等待回收线程回收内存，从而导致系统卡顿。)
+2. 多进程增强程序健壮性，例如当UI进程意外终止的时，后台业务进程正常运行能够保证业务更加稳定。
+
+多进程的坏处：
+
+1. 很多代码不再适合多进程，需要重新适配。例如：单例模式，在同一进程中线程可以共享单例；到了多进程中，每个线程中的单例就是不同的单例不能简单的通过 synchronized 来进行同步。
+2. 进程间通信需要单独做，增加了进程通信的开销。
+
+
+#### 如何开启多进程
+
+```androidManifest.xml``` 中设置组件时，添加一个 ```android:process``` 属性，这个属性是指定组件运行的进程名称。
+
+#### 进程间如何通信
+
+1. Intent
+
+    通过Intent直接传递参数给其他进程组件
+
+2. **AIDL** Android Interface Define Language
+
+    我们可以使用 android 为我们提供的 AIDL 来实现进程间的通信。
+
+    AIDL实际上是为我们进程通信的做了简化，我们只需要申明接口即可，然后编写 C/S 两端即可实现通信。实际上我们也可以不通过 AIDL 完成进程间通信，通过继承 Binder 自己编写中间的过程。
+
+    AIDL实际上就是简化Binder通信的工具，Binder通信机制实际是使用进程共享内存实现的进程间通信。
+
+4. ContentProvider
+
+    四大组件之一，为了方便应用间共享数据，底层也是 Binder 实现。
+
+5. Messenger
+
+    AIDL实现
+
+6. Socket
+
+    通过网络编程实现跨进程通信，Socket本来就是异步模型，无论是和远程进程还是本地进程，都是进程通信。
 
 
 ## OPPO 面试相关文章
