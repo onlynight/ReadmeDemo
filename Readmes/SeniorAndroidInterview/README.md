@@ -363,11 +363,72 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
 我们再看 ```prepare()``` 函数中做了判断，如果 ```sThreadLocal``` 有值则直接抛出异常，这里限制一个线程只能有一个 ```Looper``` 。
 
+下面是我纯 Java 环境下实现的模拟 Handler 简单原理：
+
+[模拟Handler实现](https://github.com/onlynight/SimulateHandler)
+
 相关文章：
 
 [Handler是如何实现线程之间的切换的](https://blog.csdn.net/c6E5UlI1N/article/details/79724023)
 
-## 二、 Java 基础
+### 5. 布局
+
+常用布局：
+
+```FrameLayout``` ```LinearLayout``` ```RelativeLayout```
+
+什么情况下使用 ```RelativeLayout``` ：
+
+Google 官方文档有这么一段描述:
+
+    A RelativeLayout is a very powerful utility for designing a user interface because it can eliminate nested 
+    view groups and keep your layout hierarchy flat, which improves performance. If you find yourself using 
+    several nested LinearLayout groups, you may be able to replace them with a single RelativeLayout.
+
+也就是说为了提高布局性能，当我们过多的布局嵌套的时候我们尝试使用一个 RelativeLayout 来解决多级嵌套问题，从而提高布局性能。
+
+
+提高性能布局：
+
+```ConstraintLayout```
+
+```ConstraintLayout``` 也是为了解决布局嵌套问题，它比 ```RelativeLayout``` 更加灵活，使用也稍微复杂一些。
+
+
+相关文章：
+
+[RelativeLayout和LinearLayout性能比较](https://blog.csdn.net/guyuealian/article/details/52162774)
+
+[实战篇ConstraintLayout的崛起之路](https://www.jianshu.com/p/a74557359882)
+
+### 6. 数据库
+
+数据库迁移。
+
+### 7. WebView 交互
+
+### 8. 列表控件对比
+
+### 9. Activity启动模式
+
+### 10. Touch 事件分发
+
+### 11. ANR出现的情况有几种？ 怎么分析解决ANR问题？
+
+ANR(Application Not responding)。Android中，主线程(UI线程)如果在规定时内没有处理完相应工作，就会出现ANR。具体来说，ANR会在以下几种情况中出现:
+
+1. 输入事件(按键和触摸事件)5s内没被处理
+2. BroadcastReceiver的事件(onRecieve方法)在规定时间内没处理完(前台广播为10s，后台广播为60s)
+3. service 前台20s后台200s未完成启动
+4. ContentProvider的publish在10s内没进行完
+
+分析ANR问题，需要结合Log以及trace文件。具体分析流程，可参照以下两篇文章：
+
+https://www.jianshu.com/p/fa962a5fd939
+
+https://blog.csdn.net/droyon/article/details/51099826
+
+## 二、 基础
 
 ### 1. 重载和重写
 
@@ -406,6 +467,9 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
 [Java—重写与重载的区别](https://blog.csdn.net/wintershii/article/details/80558739)
 
+
+### 2. TCP/TP
+
 ## 三、 开源框架
 
 ### 1. 网络框架
@@ -442,7 +506,21 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
 ### 5. 事件总线框架
 
+#### EventBus
+
+[https://github.com/greenrobot/EventBus](https://github.com/greenrobot/EventBus)
+
+优点：
+
+缺点：
+
+相关文章：
+
+[EventBus 原理解析](https://www.jianshu.com/p/d9516884dbd4)
+
 ### 6. 日志框架
+
+#### Logger
 
 ### 7. 性能优化框架
 
@@ -506,6 +584,72 @@ myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 6. Socket
 
     通过网络编程实现跨进程通信，Socket本来就是异步模型，无论是和远程进程还是本地进程，都是进程通信。
+
+### 2. 超大图加载
+
+### 3. 内存泄露
+
+内存泄露的场景有哪些？内存泄漏分析工具使用方法？
+
+常见的内存泄露有：
+
+
+- 单例模式引起的内存泄露。
+- 静态变量导致的内存泄露。
+- 非静态内部类引起的内存泄露。
+- 使用资源时，未及时关闭引起内存泄露。
+- 使用属性动画引起的内存泄露。
+- Webview导致的内存泄露。
+- 匿名内部类持有引用未释放。
+
+而对于内存泄露的检测，常用的工具有 LeakCanary 、 MAT（Memory Analyer Tools）  、Android Studio 自带的 Profiler 。
+
+### 4. 启动优化
+
+如何实现启动优化，有什么工具可以使用？
+
+相关文章：
+
+[Android启动速度优化](https://blog.csdn.net/yuanguozhengjust/article/details/80052066)
+
+[Android性能优化 -- Systrace工具](https://blog.csdn.net/Kitty_Landon/article/details/79192377)
+
+[App优化 Systrace](https://www.cnblogs.com/baiqiantao/p/7700511.html)
+
+[Android性能分析工具Systrace和TraceView的使用](https://blog.csdn.net/xiyangyang8/article/details/50545707)
+
+[Systrace的工作原理及例子解读](https://blog.csdn.net/cxq234843654/article/details/74388328)
+
+
+### 5. 设计模式
+
+常用的设计模式有哪些？是否了解责任链模式？
+
+单例模式，观察者模式，工厂模式，建造者模式，构造者模式，中间者模式，桥接模式，适配器模式等等。
+
+### 6. 线程池
+
+### 7. 内存优化
+
+### 8. 同步以及异步
+
+### 9. 模块化、插件化、组件化
+
+### 10. volatile、synchronized
+
+### 11. 内存模型以及原理
+
+### 12. 对象池
+
+### 13. 开源推送框架
+
+### 14. MVC、MVP、MVVM
+
+### 15. SQLite线程安全
+
+### 16. 网络请求定位异常
+
+### 17. 耗电量优化
 
 
 ## OPPO 面试相关文章
