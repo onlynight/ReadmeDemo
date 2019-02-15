@@ -359,9 +359,11 @@ public final class Looper {
 
 myLooper 返回的是 ThreadLocal 中保存的线程贡献变量。
 
+<font color="#ff0000">
 **```ThreadLocal``` 是用于保存线程共享变量的类，对它进行 set 时候各个线程的变量不会相互影响，```Thread.ThreadLocalMap``` 会给每个线程保存一个线程共享变量。 ```ThreadLocal``` 是切换线程的关键，```ThreadLocal``` 中保存的是当前线程的 ```Looper``` ，```Looper``` 中包含一个线程的消息队列 ```MessageQueue``` ， ```MessageQueue``` 中的 ```Message``` 中又持有 Hanmdler 的引用，当 ```Looper``` 取到 ```Message``` 后，可通过 ```Message``` 关联的 ```Handler``` 直接调用相关函数，由于是 ```Looper``` 调用的 ```Handler``` ，这时候操作 ```Handler``` 的线程就是 ```Looper``` 所在的线程了，这样就做到了线程切换。**
 
 我们再看 ```prepare()``` 函数中做了判断，如果 ```sThreadLocal``` 有值则直接抛出异常，这里限制一个线程只能有一个 ```Looper``` 。
+</font>
 
 下面是我纯 Java 环境下实现的模拟 Handler 简单原理：
 
@@ -403,17 +405,70 @@ Google 官方文档有这么一段描述:
 
 ### 6. 数据库
 
-数据库迁移。
+#### 数据库迁移
 
-### 7. WebView 交互
+数据库升级时版本号最好是连续的，方便使用循环升级，下面我们来看一段代码：
 
-### 8. 列表控件对比
+```java
+public class DBHelper extends SQLiteOpenHelper {
 
-### 9. Activity启动模式
+    private static final int VERSION = 3;
 
-### 10. Touch 事件分发
+//    private static final String CREATE_RECORDING = "CREATE TABLE IF NOT EXISTS recording(" +
+//            "ringing_time,wait_time,call_time,myphone,othrephone,localfilepath,remotefilepath," +
+//            "nickname,type,incoming,username,add_time,task_type,test);"; // version 1
+//    private static final String CREATE_RECORDING = "CREATE TABLE IF NOT EXISTS recording(" +
+//            "ringing_time,wait_time,call_time,myphone,othrephone,localfilepath,remotefilepath," +
+//            "nickname,type,incoming,username,add_time,task_type,test,task_id);"; // version 2
+    private static final String CREATE_RECORDING = "CREATE TABLE IF NOT EXISTS recording(" +
+            "ringing_time,wait_time,call_time,myphone,othrephone,localfilepath,remotefilepath," +
+            "nickname,type,incoming,username,add_time,task_type,test," +
+            "task_id,close_type,is_connected,is_accepted);"; // version 3
 
-### 11. ANR出现的情况有几种？ 怎么分析解决ANR问题？
+    public DBHelper(Context context) {
+        super(context, "mllrecordingwizard.db", null, VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(CREATE_RECORDING);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        String sql;
+        for (int i = oldVersion; i < newVersion; i++) {
+            switch (i) {
+                case 1:
+                    sql = "ALTER TABLE recording ADD COLUMN task_id;";
+                    db.execSQL(sql);
+                    break;
+                case 2:
+                    sql = "ALTER TABLE recording ADD COLUMN close_type;";
+                    db.execSQL(sql);
+                    sql = "ALTER TABLE recording ADD COLUMN is_connected;";
+                    db.execSQL(sql);
+                    sql = "ALTER TABLE recording ADD COLUMN is_accepted;";
+                    db.execSQL(sql);
+                    break;
+            }
+        }
+    }
+
+    public SQLiteDatabase getSQLiteDatabase() {
+        return this.getWritableDatabase();
+    }
+
+}
+```
+
+上例中数据库初始版本号是1，升级到最新版本号是3。为了能够有迹可循，最好保存每个版本数据库表的设计，如上面的注释。
+
+- 数据库不存在时，只会调用 ```onCreate``` 方法我们在 ```onCreate``` 中创建表即可；
+- 数据库已存在时，不会调用 ```onCreate``` 只会调用 ```onUpgrade``` 方法，我们需要在 ```onUpgrade``` 方法中执行升级操作即可。
+
+
+### 7. ANR出现的情况有几种？ 怎么分析解决ANR问题？
 
 ANR(Application Not responding)。Android中，主线程(UI线程)如果在规定时内没有处理完相应工作，就会出现ANR。具体来说，ANR会在以下几种情况中出现:
 
@@ -428,49 +483,60 @@ https://www.jianshu.com/p/fa962a5fd939
 
 https://blog.csdn.net/droyon/article/details/51099826
 
-## 二、 基础
+### 8. 列表控件对比
 
-### 1. 重载和重写
+#### ListView 与 RecyclerView 对比：
 
-#### 重写 override
+1. ```ListView``` 使用适配器时需要手动复用 view ，为非必要操作，数据多了以后很容易早晨内存溢出情况； ```RecyclerView``` 通过代码的形式约束，控件自身实现 view 的复用，避免了问题的出现。
+2. ```RecyclerView``` 支持布局管理器，布局方式灵活。
+3. ```RecyclerView``` 两级缓存
+4. ```RecyclerView``` item 动画灵活
+5. ```RecyclerView``` adapter 更新更加灵活，可单独更新某个item，不用更新整个列表。
 
-重写故名思意重新写父类已经实现的方法，即覆盖父类的方法子类重新实现。这样子类可以灵活的定义自己的行为。重写规则：
+#### RecyclerView 缓存分析
 
-- 参数列表必须完全与被重写方法的相同；
-- 返回类型必须完全与被重写方法的返回类型相同；
-- 访问权限不能比父类中被重写的方法的访问权限更低。例如：如果父类的一个方法被声明为public，那么在子类中重写该方法就不能声明为protected。
-- 父类的成员方法只能被它的子类重写。
-- 声明为final的方法不能被重写。
-- 声明为static的方法不能被重写，但是能够被再次声明。
-- 子类和父类在同一个包中，那么子类可以重写父类所有方法，除了声明为private和final的方法。
-- 子类和父类不在同一个包中，那么子类只能够重写父类的声明为public和protected的非final方法。
-- 重写的方法能够抛出任何非强制异常，无论被重写的方法是否抛出异常。但是，重写的方法不能抛出新的强制性异常，或者比被重写方法声明的更广泛的强制性异常，反之则可以。
-- 构造方法不能被重写。
-- 如果不能继承一个方法，则不能重写这个方法。
+讲解 ```RecyclerView``` 如何进行缓存的文章很多了，分析源码也很到位，图文并茂。这里不再重复造轮子，这里说一下为什么使用多级缓存：
 
-#### 重载 overload
+设置多级缓存意义：
 
-重载，同一个类中函数名相同参数不同的函数记为重写，java中一般不加 @Overload 注解，直接写重载函数即可，需要注意的重载规则：
+- **一级缓存 ```scrap```** 容量最小，只保存最先出屏幕的 ViewHolder ，需要显示是也是首先从一级缓存中取出 ViewHodler
+- **二级缓存 ```cacheView```** 二级缓存缓存一级缓存放不下的 ViewHolder
+- **三级缓存 ```RecyclerViewPool```** 三级缓存，对象池缓存，多个 RecyclerView 共享缓存。
 
+    <font color="#ff0000">
+    **各级缓存容量依次增大，一级缓存使用最频繁不宜很大，一级缓存过大遍历时间长影响效率；二级缓存是一级缓存的补充，为了弥补一级缓存的容量不足；三级缓存是共享缓存，提高应用整体的复用性以及缓存的容量。缓存容量越小命中率越高，但是过于小的缓存并不能起到缓存的作用，所以三级缓存的容量依次增大。**</font>
 
-- 被重载的方法必须改变参数列表(参数个数或类型或顺序不一样)；
-- 被重载的方法可以改变返回类型；
-- 被重载的方法可以改变访问修饰符；
-- 被重载的方法可以声明新的或更广的检查异常；
-- 方法能够在同一个类中或者在一个子类中被重载。
-- 无法以返回值类型作为重载函数的区分标准
+相关文章：
 
+[一级缓存、二级缓存和三级缓存有什么区别](https://product.pconline.com.cn/itbk/software/dnyw/1707/9624431.html)
 
-相关文章:
+[RecyclerView 源码分析(三) - RecyclerView的缓存机制](https://www.jianshu.com/p/efe81969f69d)
 
-[Java重写与重载之间的区别](https://www.cnblogs.com/guweiwei/p/6288068.html)
+[RecyclerView缓存原理](https://blog.csdn.net/weishenhong/article/details/81844514)
 
-[Java—重写与重载的区别](https://blog.csdn.net/wintershii/article/details/80558739)
+### 9. Activity启动模式
 
+- Standard
 
-### 2. TCP/TP
+    在同一个任务栈中可以有多个实例，每次调用 startActivity 都会新建一个实例添加到栈中
 
-## 三、 开源框架
+- SingleTop
+
+    栈顶复用，若不在栈顶创建一个新的 Activity
+
+- SingleTask
+
+    栈内复用，若栈中已经存在这个 Activity ，那么将其上方的其他 Activity 弹出栈并将其 放到栈顶。相当于栈内单例模式。
+
+- SingleInstance
+
+    进程单例模型，系统中唯一单例存在，单独一个任务栈。
+
+### 10. Touch 事件分发
+
+### 11. TCP/TP
+
+## 二、 开源框架
 
 ### 1. 网络框架
 
@@ -514,6 +580,100 @@ https://blog.csdn.net/droyon/article/details/51099826
 
 缺点：
 
+简单的EventBus实现 OwnEventBus：
+
+[https://github.com/onlynight/OwnEventBus](https://github.com/onlynight/OwnEventBus)
+
+```java
+/**
+ * Created by wyndam on 2017/12/27.
+ * simple event bus demo
+ */
+
+public class EventBus {
+
+    /**
+     * subscribers
+     */
+    private List<WeakReference<Object>> subscribers;
+
+    private static EventBus instance;
+
+    public static EventBus getInstance() {
+        if (instance == null) {
+            instance = new EventBus();
+        }
+        return instance;
+    }
+
+    private EventBus() {
+        this.subscribers = new ArrayList<>();
+    }
+
+    /**
+     * register subscriber to event bus
+     * @param subscriber event listener
+     */
+    public void registerSubscriber(Object subscriber) {
+        if (subscriber != null) {
+            subscribers.add(new WeakReference<>(subscriber));
+        }
+    }
+
+    /**
+     * unregister subscriber from event bus
+     * @param subscriber event listener
+     */
+    public void unregisterSubscriber(Object subscriber) {
+        if (subscriber != null) {
+            Iterator<WeakReference<Object>> iterator = subscribers.iterator();
+            Object obj = null;
+            while (iterator.hasNext()) {
+                obj = iterator.next();
+                if (obj == subscriber) {
+                    subscribers.remove(obj);
+                    obj = null;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * post event from other component
+     * @param event event data object
+     */
+    public void post(Object event) {
+        if (event instanceof String) {
+            LogUtils.D(event);
+        }
+        dispatchEvent(event);
+    }
+
+    /**
+     * dispatch event inner
+     * @param event event data object
+     */
+    private void dispatchEvent(Object event) {
+        Iterator<WeakReference<Object>> iterator = subscribers.iterator();
+        WeakReference<Object> obj;
+        while (iterator.hasNext()) {
+            obj = iterator.next();
+
+            try {
+                Method method = obj.get().getClass().getMethod("onEvent", Object.class);
+                method.invoke(obj.get(), event);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+}
+```
+
+关键就是这个 ```WeakReference``` 列表，注册的监听对象都保存在这个列表中，当对象销毁后 ```WeakReference``` 无法继续持有对象引用不会造成内存泄漏问题。然后通过反射的方式找到对象中监听回调的函数，每次 post 消息后回调监听函数。
+
 相关文章：
 
 [EventBus 原理解析](https://www.jianshu.com/p/d9516884dbd4)
@@ -538,7 +698,7 @@ https://blog.csdn.net/droyon/article/details/51099826
 
 #### Mockito
 
-## 四、 Android 进阶
+## 三、 Android 进阶
 
 ### 1. 多进程
 
@@ -650,6 +810,12 @@ https://blog.csdn.net/droyon/article/details/51099826
 ### 16. 网络请求定位异常
 
 ### 17. 耗电量优化
+
+### 18. AMS、WMS
+
+相关文章：
+
+[剖析Activity、Window、ViewRootImpl和View之间的关系](https://blog.csdn.net/jiang19921002/article/details/78977560)
 
 
 ## OPPO 面试相关文章
