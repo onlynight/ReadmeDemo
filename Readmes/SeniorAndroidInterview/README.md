@@ -807,6 +807,14 @@ public class EventBus {
 
 ### 15. SQLite线程安全
 
+SQLite 非线程安全，SQLiteDatabase 提供了java锁操作，但是也不支持多线程写操作，给数据库写操作加上同步锁可解决同步写问题；终结解决方案就是只有一个可写的数据库连接，所有写操作读取这个可写数据库即可。
+
+相关文章：
+
+[Android多线程操作sqlite（Sqlite解决database locked问题）](https://www.cnblogs.com/liaolandemengxiang/p/3977094.html)
+
+[Android SQLite是线程安全的吗？](https://blog.csdn.net/zhuhai__yizhi/article/details/50818805)
+
 ### 16. 网络请求定位异常
 
 ### 17. 耗电量优化
