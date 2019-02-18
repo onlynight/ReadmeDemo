@@ -1,4 +1,4 @@
-OPPO 高级 Android 开发面试题汇总
+高级 Android 开发面试题汇总
 ===============================
 
 ## 一、 Android 基础
@@ -534,7 +534,15 @@ https://blog.csdn.net/droyon/article/details/51099826
 
 ### 10. Touch 事件分发
 
+相关文章：
+
+[Android Touch事件传递机制全面解析（从WMS到View树）](https://blog.csdn.net/ns_code/article/details/49848801)
+
+[剖析Activity、Window、ViewRootImpl和View之间的关系](https://blog.csdn.net/jiang19921002/article/details/78977560)
+
 ### 11. TCP/TP
+
+[计算机网络-运输层](https://blog.csdn.net/tgbus18990140382/article/details/87608136)
 
 ## 二、 开源框架
 
@@ -542,15 +550,121 @@ https://blog.csdn.net/droyon/article/details/51099826
 
 #### OkHttp
 
+![原理图](./images/okhttp_structure_graph.webp)
+
+相关文章：
+
+[OkHttp源码解析](https://www.jianshu.com/p/5b7ccc7e5bb7)
+
+源码地址： https://github.com/square/okhttp
+
 #### Retrofit
+
+Retrofit 的核心就是 Java 的动态代理和动态注解，只要理解了这两个基本原来就是掌握了。
+
+
+
+```java
+// Retrofit.java
+/**
+* Create an implementation of the API endpoints defined by the {@code service} interface.
+* <p>
+* The relative path for a given method is obtained from an annotation on the method describing
+* the request type. The built-in methods are {@link retrofit2.http.GET GET},
+* {@link retrofit2.http.PUT PUT}, {@link retrofit2.http.POST POST}, {@link retrofit2.http.PATCH
+* PATCH}, {@link retrofit2.http.HEAD HEAD}, {@link retrofit2.http.DELETE DELETE} and
+* {@link retrofit2.http.OPTIONS OPTIONS}. You can use a custom HTTP method with
+* {@link HTTP @HTTP}. For a dynamic URL, omit the path on the annotation and annotate the first
+* parameter with {@link Url @Url}.
+* <p>
+* Method parameters can be used to replace parts of the URL by annotating them with
+* {@link retrofit2.http.Path @Path}. Replacement sections are denoted by an identifier
+* surrounded by curly braces (e.g., "{foo}"). To add items to the query string of a URL use
+* {@link retrofit2.http.Query @Query}.
+* <p>
+* The body of a request is denoted by the {@link retrofit2.http.Body @Body} annotation. The
+* object will be converted to request representation by one of the {@link Converter.Factory}
+* instances. A {@link RequestBody} can also be used for a raw representation.
+* <p>
+* Alternative request body formats are supported by method annotations and corresponding
+* parameter annotations:
+* <ul>
+* <li>{@link retrofit2.http.FormUrlEncoded @FormUrlEncoded} - Form-encoded data with key-value
+* pairs specified by the {@link retrofit2.http.Field @Field} parameter annotation.
+* <li>{@link retrofit2.http.Multipart @Multipart} - RFC 2388-compliant multipart data with
+* parts specified by the {@link retrofit2.http.Part @Part} parameter annotation.
+* </ul>
+* <p>
+* Additional static headers can be added for an endpoint using the
+* {@link retrofit2.http.Headers @Headers} method annotation. For per-request control over a
+* header annotate a parameter with {@link Header @Header}.
+* <p>
+* By default, methods return a {@link Call} which represents the HTTP request. The generic
+* parameter of the call is the response body type and will be converted by one of the
+* {@link Converter.Factory} instances. {@link ResponseBody} can also be used for a raw
+* representation. {@link Void} can be used if you do not care about the body contents.
+* <p>
+* For example:
+* <pre>
+* public interface CategoryService {
+*   &#64;POST("category/{cat}/")
+*   Call&lt;List&lt;Item&gt;&gt; categoryList(@Path("cat") String a, @Query("page") int b);
+* }
+* </pre>
+*/
+@SuppressWarnings("unchecked") // Single-interface proxy creation guarded by parameter safety.
+public <T> T create(final Class<T> service) {
+Utils.validateServiceInterface(service);
+if (validateEagerly) {
+  eagerlyValidateMethods(service);
+}
+return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[] { service },
+    new InvocationHandler() {
+      private final Platform platform = Platform.get();
+      private final Object[] emptyArgs = new Object[0];
+
+      @Override public @Nullable Object invoke(Object proxy, Method method,
+          @Nullable Object[] args) throws Throwable {
+        // If the method is a method from Object then defer to normal invocation.
+        if (method.getDeclaringClass() == Object.class) {
+          return method.invoke(this, args);
+        }
+        if (platform.isDefaultMethod(method)) {
+          return platform.invokeDefaultMethod(method, service, proxy, args);
+        }
+        return loadServiceMethod(method).invoke(args != null ? args : emptyArgs);
+      }
+    });
+}
+```
+
+**代理对象的方法执行时会回调 InvocationHandler#invoke 方法，框架会针对不同方法上的注解动态解析并生成不同的 okhttp 请求。**
+
+源码地址： https://github.com/square/retrofit
+
+相关文章：
+
+[java动态代理、Proxy与InvocationHandler](https://www.cnblogs.com/LCcnblogs/p/6823982.html)
+
+[Retrofit源码分析（超详细）](https://www.jianshu.com/p/097947afddaf)
 
 ### 2. 图片加载框架
 
 #### Glide
 
+源码地址： https://github.com/bumptech/glide
+
 #### Fresco
 
+源码地址： https://github.com/facebook/fresco
+
 #### Picasso
+
+源码地址： https://github.com/square/Picasso
+
+#### 图片加载库对比
+
+三个框架功能、性能对比分析： https://juejin.im/entry/5928e9212f301e0057d6bb93
 
 ### 3. 数据库 ORM 框架
 
@@ -820,6 +934,12 @@ SQLite 非线程安全，SQLiteDatabase 提供了java锁操作，但是也不支
 ### 17. 耗电量优化
 
 ### 18. AMS、WMS
+
+### 19. Binder
+
+相关文章：
+
+[Binder机制的原理](https://blog.csdn.net/zhwadezh/article/details/79310119)
 
 相关文章：
 
