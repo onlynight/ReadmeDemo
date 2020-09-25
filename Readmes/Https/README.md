@@ -11,6 +11,10 @@ https://juejin.im/post/6844903679036932104
 https://segmentfault.com/a/1190000021559557
 
 
+# http 1.1 与 2.0 区别
+https://blog.csdn.net/ailunlee/article/details/97831912
+
+
 # okhttp
 
 https://zhuanlan.zhihu.com/p/104813091
