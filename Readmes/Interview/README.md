@@ -21,3 +21,8 @@
 # 2. JVM
 
 [Java内存区域（运行时数据区域）和内存模型（JMM）](https://www.cnblogs.com/czwbig/p/11127124.html) 
+
+
+# 3. 死锁
+
+https://blog.csdn.net/guaiguaihenguai/article/details/80303835
